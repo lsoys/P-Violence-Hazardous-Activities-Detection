@@ -14,6 +14,19 @@ from pathlib import Path
 import json
 import base64
 from io import BytesIO
+
+# Custom JSON encoder for numpy types
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        elif isinstance(obj, (np.floating, np.float32, np.float64)):
+            return float(obj)
+        elif isinstance(obj, (np.integer, np.int32, np.int64)):
+            return int(obj)
+        elif isinstance(obj, np.bool_):
+            return bool(obj)
+        return super().default(obj)
 import base64
 from io import BytesIO
 
@@ -31,6 +44,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 # Configuration
 app.config['JSON_SORT_KEYS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max file size
+app.json_encoder = NumpyEncoder  # Use custom JSON encoder
 
 # Global model state
 model = None

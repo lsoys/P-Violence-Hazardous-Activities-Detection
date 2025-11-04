@@ -51,6 +51,7 @@ const loadingModal = document.getElementById('loading-modal');
 const loadingMessage = document.getElementById('loading-message');
 const analysisVideo = document.getElementById('analysis-video');
 const violenceTimeline = document.getElementById('violence-timeline');
+const violenceOverlay = document.getElementById('violence-overlay');
 
 /**
  * Format bytes to human readable format
@@ -246,13 +247,24 @@ function createViolenceTimeline(totalFrames, violenceData) {
 function setupVideoPlayer(videoPath) {
     // Set video source
     analysisVideo.src = videoPath;
-
+    
     // Update timeline
     const totalFrames = currentAnalysisData.total_frames || 200;
     createViolenceTimeline(totalFrames, violenceFrames);
 
     // Update video event listeners
     analysisVideo.addEventListener('timeupdate', updateFrameInfo);
+    analysisVideo.addEventListener('play', () => {
+        violenceOverlay.classList.remove('hidden');
+    });
+    analysisVideo.addEventListener('pause', () => {
+        violenceOverlay.classList.add('hidden');
+    });
+    
+    // Auto-play the video
+    analysisVideo.play().catch(err => {
+        console.warn('Autoplay prevented:', err);
+    });
     
     playerSection.classList.remove('hidden');
 }
@@ -276,6 +288,20 @@ function updateFrameInfo() {
     document.getElementById('current-frame').textContent = frameNumber + 1;
     document.getElementById('current-time').textContent = timeStr;
     document.getElementById('frame-confidence').textContent = (frameConfidence * 100).toFixed(1) + '%';
+    
+    // Update overlay score
+    const overlayScore = document.getElementById('overlay-score');
+    if (overlayScore) {
+        overlayScore.textContent = (frameConfidence * 100).toFixed(1) + '%';
+        // Update color based on confidence
+        if (frameConfidence > 0.7) {
+            overlayScore.className = 'text-2xl font-bold text-red-500';
+        } else if (frameConfidence > 0.5) {
+            overlayScore.className = 'text-2xl font-bold text-orange-400';
+        } else {
+            overlayScore.className = 'text-2xl font-bold text-yellow-400';
+        }
+    }
 }
 
 /**
@@ -307,6 +333,9 @@ function displayResults(data) {
     document.getElementById('extracted-frames').textContent = data.extracted_frames || '0';
     document.getElementById('processing-time').textContent = 
         (data.processing_time ? data.processing_time.toFixed(2) : '0') + ' s';
+    
+    // Update overall confidence display
+    document.getElementById('overall-confidence-display').textContent = (violenceScore * 100).toFixed(1) + '%';
 
     // Display labels
     if (data.labels) {
