@@ -294,46 +294,70 @@ function displayFrames(frames) {
  * Setup video player with canvas overlay
  */
 function setupVideoPlayer(data) {
+    console.log('Setting up video player with data:', data);
+    
     // Scroll to video player
-    const videoElement = document.getElementById('analysis-video');
-    if (videoElement) {
-        videoElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    setTimeout(() => {
+        const videoElement = document.getElementById('analysis-video');
+        if (videoElement) {
+            videoElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, 100);
     
     // Set video source
     analysisVideo.src = data.video_path;
-    analysisVideo.autoplay = true;  // Enable autoplay
     analysisVideo.controls = true;
     analysisVideo.muted = true;  // Mute for autoplay compliance
+    
+    console.log('Video source set to:', data.video_path);
     
     // Setup canvas
     const ctx = annotationCanvas.getContext('2d');
     
-    // Configure canvas positioning
+    // Configure canvas positioning and sizing
     annotationCanvas.style.position = 'absolute';
     annotationCanvas.style.top = '0';
     annotationCanvas.style.left = '0';
     annotationCanvas.style.cursor = 'pointer';
     annotationCanvas.style.zIndex = '5';
     
-    // Update canvas when video metadata loads
-    analysisVideo.addEventListener('loadedmetadata', function() {
+    // Handle loadedmetadata event to setup canvas size
+    const handleMetadataLoaded = function() {
+        console.log('Video metadata loaded');
+        
+        // Set canvas dimensions to match container
+        const rect = videoContainer.getBoundingClientRect();
         annotationCanvas.width = videoContainer.offsetWidth;
-        annotationCanvas.height = annotationCanvas.width * (analysisVideo.videoHeight / analysisVideo.videoWidth);
-        annotationCanvas.style.display = 'block';
+        annotationCanvas.height = videoContainer.offsetHeight;
+        
+        console.log('Canvas size set to:', annotationCanvas.width, 'x', annotationCanvas.height);
         
         // Create violence timeline
-        createViolenceTimeline(data.frame_predictions);
+        if (data.frame_predictions) {
+            createViolenceTimeline(data.frame_predictions);
+        }
         
-        // Auto-start playback
+        // Show canvas and start playback
+        annotationCanvas.style.display = 'block';
+        analysisVideo.autoplay = true;
         analysisVideo.play().catch(e => console.log('Autoplay prevented:', e));
-    }, { once: true });
+    };
+    
+    analysisVideo.removeEventListener('loadedmetadata', handleMetadataLoaded);
+    analysisVideo.addEventListener('loadedmetadata', handleMetadataLoaded);
+    
+    // If metadata is already loaded, call handler
+    if (analysisVideo.readyState >= 1) {
+        handleMetadataLoaded();
+    }
     
     // Track video playback for frame updates
-    analysisVideo.addEventListener('timeupdate', function() {
-        updateFrameInfo(this);
-        drawDetectionBoxes(this, ctx);
-    });
+    analysisVideo.removeEventListener('timeupdate', updateFrameAndDraw);
+    const updateFrameAndDraw = () => {
+        updateFrameInfo(analysisVideo);
+        drawDetectionBoxes(analysisVideo, ctx);
+    };
+    analysisVideo.addEventListener('timeupdate', updateFrameAndDraw);
     
     // Show overlay on play
     analysisVideo.addEventListener('play', function() {

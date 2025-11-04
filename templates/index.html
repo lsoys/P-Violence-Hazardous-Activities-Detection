@@ -139,12 +139,12 @@
                 </h2>
                 <div class="space-y-4">
                     <!-- Video Player Container -->
-                    <div class="relative w-full bg-black rounded-lg overflow-hidden" id="video-container">
-                        <video id="analysis-video" class="w-full h-auto block" controls playsinline>
+                    <div class="relative w-full bg-black rounded-lg overflow-hidden" id="video-container" style="aspect-ratio: 16/9; min-height: 400px; max-height: 600px;">
+                        <video id="analysis-video" class="w-full h-full object-cover" controls playsinline>
                             <p>Your browser does not support HTML5 video.</p>
                         </video>
                         <!-- Canvas for detection overlays - overlaid on video -->
-                        <canvas id="annotation-canvas" class="absolute top-0 left-0 w-full h-full" style="display: none; z-index: 5;"></canvas>
+                        <canvas id="annotation-canvas" class="absolute top-0 left-0" style="display: none; z-index: 5; width: 100%; height: 100%;"></canvas>
                         <!-- Violence Overlay Badge -->
                         <div id="violence-overlay" class="absolute top-4 right-4 bg-slate-900/80 px-4 py-2 rounded-lg hidden z-10">
                             <p class="text-sm text-slate-300">Violence Score</p>
