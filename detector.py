@@ -240,9 +240,10 @@ class ViolenceDetector:
     
     def analyze_violence_indicators(self, frame, detections, motion_score, motion_regions):
         """Analyze all indicators to determine violence/hazard level"""
-        violence_score = 0.0
-        hazard_score = 0.0
-        alerts = []
+        try:
+            violence_score = 0.0
+            hazard_score = 0.0
+            alerts = []
         
         # Check if frame is valid
         if frame is None:
@@ -264,31 +265,45 @@ class ViolenceDetector:
         detections = [d for d in detections if d is not None]
         
         # Count people
-        people_count = sum(1 for d in detections if d['label'] == 'person')
+        people_count = sum(1 for d in detections if isinstance(d, dict) and d.get('label') == 'person')
         
         # Check for weapons
-        weapons = [d for d in detections if d.get('danger_info', {}).get('category') == 'weapon']
+        weapons = [d for d in detections if isinstance(d, dict) and d.get('danger_info', {}).get('category') == 'weapon']
         if weapons:
             violence_score = max(violence_score, 0.9)
             for w in weapons:
                 alerts.append({
                     'type': 'WEAPON_DETECTED',
                     'severity': 'critical',
-                    'message': f"Weapon detected: {w['label']} ({w['confidence']:.0%})",
-                    'bbox': w['bbox']
+                    'message': f"Weapon detected: {w.get('label', 'unknown')} ({w.get('confidence', 0):.0%})",
+                    'bbox': w.get('bbox')
                 })
         
         # Check for fire
         fire_detections = self.detect_fire(frame)
         if fire_detections:
-            hazard_score = max(hazard_score, max(f['confidence'] for f in fire_detections))
-            for f in fire_detections:
-                alerts.append({
-                    'type': 'FIRE_DETECTED',
-                    'severity': 'critical',
-                    'message': f"Fire/flames detected ({f['confidence']:.0%})",
-                    'bbox': f['bbox']
-                })
+                hazard_score = max(hazard_score, max(f.get('confidence', 0) for f in fire_detections if isinstance(f, dict)))
+                for f in fire_detections:
+                    if isinstance(f, dict):
+                        alerts.append({
+                            'type': 'FIRE_DETECTED',
+                            'severity': 'critical',
+                            'message': f"Fire/flames detected ({f.get('confidence', 0):.0%})",
+                            'bbox': f.get('bbox')
+                        })
+            
+            # Check for smoke
+            smoke_detections = self.detect_smoke(frame)
+            if smoke_detections:
+                hazard_score = max(hazard_score, max(s.get('confidence', 0) for s in smoke_detections if isinstance(s, dict)))
+                for s in smoke_detections:
+                    if isinstance(s, dict):
+                        alerts.append({
+                            'type': 'SMOKE_DETECTED',
+                            'severity': 'medium',
+                            'message': f"Smoke detected ({s.get('confidence', 0):.0%})",
+                            'bbox': s.get('bbox')
+                        })
         
         # Analyze motion for fighting
         avg_motion = np.mean(self.motion_history) if self.motion_history else 0
@@ -332,8 +347,20 @@ class ViolenceDetector:
             'people_count': people_count,
             'motion_score': motion_score,
             'alerts': alerts,
-            'detections': detections + fire_detections
+            'detections': detections + fire_detections + smoke_detections
         }
+        
+        except Exception as e:
+            logger.error(f"Error in analyze_violence_indicators: {e}")
+            return {
+                'violence_score': 0.0,
+                'hazard_score': 0.0,
+                'overall_danger': 0.0,
+                'people_count': 0,
+                'motion_score': 0.0,
+                'alerts': [],
+                'detections': []
+            }
     
     def process_frame(self, frame):
         """Process a single frame for violence/hazard detection"""
