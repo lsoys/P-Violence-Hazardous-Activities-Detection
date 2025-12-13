@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  @apply transition-colors;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* Base Styles */
+body {
+  @apply antialiased text-gray-100;
+}
+
+/* Utility Classes */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Form Inputs */
+input[type="file"],
+input[type="text"],
+textarea,
+select {
+  @apply w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20;
+}
+
+input[type="file"]::file-selector-button {
+  @apply px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded cursor-pointer mr-2 font-medium;
+}
+
+/* Buttons */
+button {
+  @apply font-medium;
+}
+
+button:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* Video Elements */
+video {
+  @apply rounded bg-black;
+}
+
+/* Canvas Elements */
+canvas {
+  @apply rounded bg-black;
+}
