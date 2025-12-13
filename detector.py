@@ -215,12 +215,22 @@ class ViolenceDetector:
                     continue
                 
                 for box in boxes:
+                    if box is None:
+                        continue
+                    
+                    # Ensure required attributes exist
+                    if box.cls is None or box.conf is None or box.xyxy is None:
+                        continue
+                    
                     cls_id = int(box.cls[0])
                     conf = float(box.conf[0])
                     xyxy = box.xyxy[0].cpu().numpy()
                     
                     # Get class name
-                    class_name = self.yolo_model.names[cls_id]
+                    if hasattr(self.yolo_model, 'names') and self.yolo_model.names:
+                        class_name = self.yolo_model.names.get(cls_id, f'class_{cls_id}')
+                    else:
+                        class_name = f'class_{cls_id}'
                     
                     # Check if it's a dangerous object
                     danger_info = DANGEROUS_CLASSES.get(class_name, None)
