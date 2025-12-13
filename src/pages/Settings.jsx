@@ -7,7 +7,7 @@ export default function Settings() {
     autoExport: false,
     darkMode: true,
     showNotifications: true,
-    apiEndpoint: 'https://p-violence-hazardous-activities-detection.onrender.com',
+    apiEndpoint: 'http://127.0.0.1:5000',
     confidenceThreshold: 50
   })
 
@@ -69,7 +69,7 @@ export default function Settings() {
         autoExport: false,
         darkMode: true,
         showNotifications: true,
-        apiEndpoint: 'https://p-violence-hazardous-activities-detection.onrender.com',
+        apiEndpoint: 'http://127.0.0.1:5000',
         confidenceThreshold: 50
       }
       setSettings(defaults)

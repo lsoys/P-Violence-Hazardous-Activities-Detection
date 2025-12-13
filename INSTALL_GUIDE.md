@@ -230,7 +230,7 @@ The app is fully mouse/touch compatible. Keyboard shortcuts can be added:
 ### Network Requirements
 - Stable internet connection
 - HTTPS required for camera access (in production)
-- Access to: https://p-violence-hazardous-activities-detection.onrender.com/
+- Access to: `http://127.0.0.1:5000/` (local development) or `https://p-violence-hazardous-activities-detection.onrender.com/` (production)
 
 ---
 

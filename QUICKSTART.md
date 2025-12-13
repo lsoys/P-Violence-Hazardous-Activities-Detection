@@ -132,11 +132,13 @@ npm run build -- --help
 ## Configuration
 
 ### API Endpoint
-The app connects to: `https://p-violence-hazardous-activities-detection.onrender.com/`
+The app connects to: `http://127.0.0.1:5000/` (local development) or `https://p-violence-hazardous-activities-detection.onrender.com/` (production)
 
 To change this, edit [src/utils/api.js](src/utils/api.js):
 ```javascript
-const API_BASE = 'https://your-api-endpoint.com'
+const API_BASE_URL = 'http://127.0.0.1:5000'  // for local development
+// or
+const API_BASE_URL = 'https://p-violence-hazardous-activities-detection.onrender.com'  // for production
 ```
 
 ### Maximum Video Size
@@ -264,6 +266,10 @@ See [README.md](README.md#troubleshooting) for detailed troubleshooting
 ### API Status
 Check if API is online:
 ```bash
+# For local development
+curl http://127.0.0.1:5000/api/status
+
+# For production
 curl https://p-violence-hazardous-activities-detection.onrender.com/api/status
 ```
 

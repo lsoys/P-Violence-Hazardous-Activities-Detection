@@ -355,7 +355,8 @@ See [Help Page](src/pages/Help.jsx) or [INSTALL_GUIDE.md](INSTALL_GUIDE.md)
 
 ### Default API Endpoint
 ```
-https://p-violence-hazardous-activities-detection.onrender.com/
+http://127.0.0.1:5000/ (local development)
+https://p-violence-hazardous-activities-detection.onrender.com/ (production)
 ```
 
 Can be configured in Settings page.

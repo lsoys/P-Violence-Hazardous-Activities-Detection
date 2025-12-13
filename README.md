@@ -78,7 +78,7 @@ XDVioDet-Frontend/
 
 The frontend connects to the hosted XDVioDet API:
 
-**Base URL**: `https://p-violence-hazardous-activities-detection.onrender.com/`
+**Base URL**: `http://127.0.0.1:5000/` (local development) or `https://p-violence-hazardous-activities-detection.onrender.com/` (production)
 
 ### Endpoints
 
