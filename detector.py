@@ -76,6 +76,10 @@ class ViolenceDetector:
         self.fire_lower = np.array([0, 50, 200])
         self.fire_upper = np.array([35, 255, 255])
         
+        # Smoke detection parameters (HSV ranges for smoke colors)
+        self.smoke_lower = np.array([0, 0, 50])
+        self.smoke_upper = np.array([180, 30, 200])
+        
         logger.info("ViolenceDetector initialized")
     
     def _init_yolo(self):
@@ -127,6 +131,33 @@ class ViolenceDetector:
                 })
         
         return fire_regions
+    
+    def detect_smoke(self, frame):
+        """Detect smoke using color analysis"""
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        
+        # Smoke color mask (gray/black tones)
+        smoke_lower = np.array([0, 0, 50])
+        smoke_upper = np.array([180, 30, 200])
+        mask = cv2.inRange(hsv, smoke_lower, smoke_upper)
+        
+        # Find contours
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        smoke_regions = []
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > 1000:  # Larger area threshold for smoke
+                x, y, w, h = cv2.boundingRect(contour)
+                confidence = min(area / 20000, 0.85)  # Scale confidence by area
+                smoke_regions.append({
+                    'bbox': [x, y, x+w, y+h],
+                    'confidence': confidence,
+                    'label': 'smoke',
+                    'category': 'fire'
+                })
+        
+        return smoke_regions
     
     def detect_motion(self, frame):
         """Detect rapid motion (fighting, running)"""
