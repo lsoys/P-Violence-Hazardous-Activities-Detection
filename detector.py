@@ -244,6 +244,25 @@ class ViolenceDetector:
         hazard_score = 0.0
         alerts = []
         
+        # Check if frame is valid
+        if frame is None:
+            return {
+                'violence_score': 0.0,
+                'hazard_score': 0.0,
+                'overall_danger': 0.0,
+                'people_count': 0,
+                'motion_score': 0.0,
+                'alerts': [],
+                'detections': []
+            }
+        
+        # Ensure detections is a list
+        if detections is None:
+            detections = []
+        
+        # Filter out None detections to prevent errors
+        detections = [d for d in detections if d is not None]
+        
         # Count people
         people_count = sum(1 for d in detections if d['label'] == 'person')
         
@@ -318,43 +337,56 @@ class ViolenceDetector:
     
     def process_frame(self, frame):
         """Process a single frame for violence/hazard detection"""
-        # Resize for faster processing
-        process_frame = cv2.resize(frame, (640, 480))
+        try:
+            # Resize for faster processing
+            process_frame = cv2.resize(frame, (640, 480))
+            
+            # Detect objects with YOLO
+            detections = self.detect_objects(process_frame)
+            
+            # Detect motion
+            motion_score, motion_regions = self.detect_motion(process_frame)
+            
+            # Analyze violence indicators
+            analysis = self.analyze_violence_indicators(
+                process_frame, detections, motion_score, motion_regions
+            )
+            
+            # Scale bounding boxes back to original size
+            scale_x = frame.shape[1] / 640
+            scale_y = frame.shape[0] / 480
+            
+            for det in analysis['detections']:
+                if det and det.get('bbox'):
+                    det['bbox'] = [
+                        int(det['bbox'][0] * scale_x),
+                        int(det['bbox'][1] * scale_y),
+                        int(det['bbox'][2] * scale_x),
+                        int(det['bbox'][3] * scale_y)
+                    ]
+            
+            for alert in analysis['alerts']:
+                if alert and alert.get('bbox'):
+                    alert['bbox'] = [
+                        int(alert['bbox'][0] * scale_x),
+                        int(alert['bbox'][1] * scale_y),
+                        int(alert['bbox'][2] * scale_x),
+                        int(alert['bbox'][3] * scale_y)
+                    ]
+            
+            return analysis
         
-        # Detect objects with YOLO
-        detections = self.detect_objects(process_frame)
-        
-        # Detect motion
-        motion_score, motion_regions = self.detect_motion(process_frame)
-        
-        # Analyze violence indicators
-        analysis = self.analyze_violence_indicators(
-            process_frame, detections, motion_score, motion_regions
-        )
-        
-        # Scale bounding boxes back to original size
-        scale_x = frame.shape[1] / 640
-        scale_y = frame.shape[0] / 480
-        
-        for det in analysis['detections']:
-            if det.get('bbox'):
-                det['bbox'] = [
-                    int(det['bbox'][0] * scale_x),
-                    int(det['bbox'][1] * scale_y),
-                    int(det['bbox'][2] * scale_x),
-                    int(det['bbox'][3] * scale_y)
-                ]
-        
-        for alert in analysis['alerts']:
-            if alert.get('bbox'):
-                alert['bbox'] = [
-                    int(alert['bbox'][0] * scale_x),
-                    int(alert['bbox'][1] * scale_y),
-                    int(alert['bbox'][2] * scale_x),
-                    int(alert['bbox'][3] * scale_y)
-                ]
-        
-        return analysis
+        except Exception as e:
+            logger.error(f"Error processing frame: {e}")
+            return {
+                'violence_score': 0.0,
+                'hazard_score': 0.0,
+                'overall_danger': 0.0,
+                'people_count': 0,
+                'motion_score': 0.0,
+                'alerts': [],
+                'detections': []
+            }
     
     def process_video(self, video_path, callback=None):
         """Process entire video and return frame-by-frame analysis"""
