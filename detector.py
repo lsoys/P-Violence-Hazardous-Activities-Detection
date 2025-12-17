@@ -76,6 +76,10 @@ class ViolenceDetector:
         self.fire_lower = np.array([0, 50, 200])
         self.fire_upper = np.array([35, 255, 255])
         
+        # Smoke detection parameters (HSV ranges for smoke colors)
+        self.smoke_lower = np.array([0, 0, 50])
+        self.smoke_upper = np.array([180, 30, 200])
+        
         logger.info("ViolenceDetector initialized")
     
     def _init_yolo(self):
@@ -127,6 +131,33 @@ class ViolenceDetector:
                 })
         
         return fire_regions
+    
+    def detect_smoke(self, frame):
+        """Detect smoke using color analysis"""
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        
+        # Smoke color mask (gray/black tones)
+        smoke_lower = np.array([0, 0, 50])
+        smoke_upper = np.array([180, 30, 200])
+        mask = cv2.inRange(hsv, smoke_lower, smoke_upper)
+        
+        # Find contours
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        smoke_regions = []
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > 1000:  # Larger area threshold for smoke
+                x, y, w, h = cv2.boundingRect(contour)
+                confidence = min(area / 20000, 0.85)  # Scale confidence by area
+                smoke_regions.append({
+                    'bbox': [x, y, x+w, y+h],
+                    'confidence': confidence,
+                    'label': 'smoke',
+                    'category': 'fire'
+                })
+        
+        return smoke_regions
     
     def detect_motion(self, frame):
         """Detect rapid motion (fighting, running)"""
@@ -184,12 +215,22 @@ class ViolenceDetector:
                     continue
                 
                 for box in boxes:
+                    if box is None:
+                        continue
+                    
+                    # Ensure required attributes exist
+                    if box.cls is None or box.conf is None or box.xyxy is None:
+                        continue
+                    
                     cls_id = int(box.cls[0])
                     conf = float(box.conf[0])
                     xyxy = box.xyxy[0].cpu().numpy()
                     
                     # Get class name
-                    class_name = self.yolo_model.names[cls_id]
+                    if hasattr(self.yolo_model, 'names') and self.yolo_model.names:
+                        class_name = self.yolo_model.names.get(cls_id, f'class_{cls_id}')
+                    else:
+                        class_name = f'class_{cls_id}'
                     
                     # Check if it's a dangerous object
                     danger_info = DANGEROUS_CLASSES.get(class_name, None)
@@ -209,121 +250,195 @@ class ViolenceDetector:
     
     def analyze_violence_indicators(self, frame, detections, motion_score, motion_regions):
         """Analyze all indicators to determine violence/hazard level"""
-        violence_score = 0.0
-        hazard_score = 0.0
-        alerts = []
-        
-        # Count people
-        people_count = sum(1 for d in detections if d['label'] == 'person')
-        
-        # Check for weapons
-        weapons = [d for d in detections if d.get('danger_info', {}).get('category') == 'weapon']
-        if weapons:
-            violence_score = max(violence_score, 0.9)
-            for w in weapons:
-                alerts.append({
-                    'type': 'WEAPON_DETECTED',
-                    'severity': 'critical',
-                    'message': f"Weapon detected: {w['label']} ({w['confidence']:.0%})",
-                    'bbox': w['bbox']
-                })
-        
-        # Check for fire
-        fire_detections = self.detect_fire(frame)
-        if fire_detections:
-            hazard_score = max(hazard_score, max(f['confidence'] for f in fire_detections))
-            for f in fire_detections:
-                alerts.append({
-                    'type': 'FIRE_DETECTED',
-                    'severity': 'critical',
-                    'message': f"Fire/flames detected ({f['confidence']:.0%})",
-                    'bbox': f['bbox']
-                })
-        
-        # Analyze motion for fighting
-        avg_motion = np.mean(self.motion_history) if self.motion_history else 0
-        
-        # High motion with multiple people = potential fight
-        if people_count >= 2 and avg_motion > 0.3:
-            fight_score = min(avg_motion * people_count * 0.5, 0.95)
-            violence_score = max(violence_score, fight_score)
+        try:
+            violence_score = 0.0
+            hazard_score = 0.0
+            alerts = []
             
-            if fight_score > 0.5:
-                alerts.append({
-                    'type': 'FIGHT_DETECTED',
-                    'severity': 'high' if fight_score > 0.7 else 'medium',
-                    'message': f"Possible fight/altercation detected ({fight_score:.0%})",
-                    'bbox': None
-                })
-        
-        # Sudden high motion = aggression/panic
-        if len(self.motion_history) >= 5:
-            recent_motion = np.mean(self.motion_history[-5:])
-            older_motion = np.mean(self.motion_history[:-5]) if len(self.motion_history) > 5 else 0
+            # Check if frame is valid
+            if frame is None:
+                return {
+                    'violence_score': 0.0,
+                    'hazard_score': 0.0,
+                    'overall_danger': 0.0,
+                    'people_count': 0,
+                    'motion_score': 0.0,
+                    'alerts': [],
+                    'detections': []
+                }
             
-            if recent_motion > older_motion * 2 and recent_motion > 0.4:
-                aggression_score = min(recent_motion, 0.85)
-                violence_score = max(violence_score, aggression_score)
+            # Ensure detections is a list
+            if detections is None:
+                detections = []
+            
+            # Filter out None detections to prevent errors
+            detections = [d for d in detections if d is not None]
+            
+            # Count people
+            people_count = sum(1 for d in detections if isinstance(d, dict) and d.get('label') == 'person')
+            
+            # Check for weapons
+            weapons = [d for d in detections if isinstance(d, dict) and d.get('danger_info', {}).get('category') == 'weapon']
+            if weapons:
+                violence_score = max(violence_score, 0.9)
+                for w in weapons:
+                    alerts.append({
+                        'type': 'WEAPON_DETECTED',
+                        'severity': 'critical',
+                        'message': f"Weapon detected: {w.get('label', 'unknown')} ({w.get('confidence', 0):.0%})",
+                        'bbox': w.get('bbox')
+                    })
+            
+            # Check for fire
+            fire_detections = self.detect_fire(frame) if frame is not None else []
+            if not fire_detections:
+                fire_detections = []
                 
-                alerts.append({
-                    'type': 'AGGRESSION_DETECTED',
-                    'severity': 'medium',
-                    'message': f"Sudden aggressive movement detected ({aggression_score:.0%})",
-                    'bbox': None
-                })
+            if fire_detections:
+                hazard_score = max(hazard_score, max(f.get('confidence', 0) for f in fire_detections if isinstance(f, dict)))
+                for f in fire_detections:
+                    if isinstance(f, dict):
+                        alerts.append({
+                            'type': 'FIRE_DETECTED',
+                            'severity': 'critical',
+                            'message': f"Fire/flames detected ({f.get('confidence', 0):.0%})",
+                            'bbox': f.get('bbox')
+                        })
+                
+                # Check for smoke
+                smoke_detections = self.detect_smoke(frame) if frame is not None else []
+                if not smoke_detections:
+                    smoke_detections = []
+                    
+                if smoke_detections:
+                    hazard_score = max(hazard_score, max(s.get('confidence', 0) for s in smoke_detections if isinstance(s, dict)))
+                    for s in smoke_detections:
+                        if isinstance(s, dict):
+                            alerts.append({
+                                'type': 'SMOKE_DETECTED',
+                                'severity': 'medium',
+                                'message': f"Smoke detected ({s.get('confidence', 0):.0%})",
+                                'bbox': s.get('bbox')
+                            })
+            else:
+                smoke_detections = []
+            
+            # Analyze motion for fighting
+            avg_motion = np.mean(self.motion_history) if self.motion_history else 0
+            
+            # High motion with multiple people = potential fight
+            if people_count >= 2 and avg_motion > 0.3:
+                fight_score = min(avg_motion * people_count * 0.5, 0.95)
+                violence_score = max(violence_score, fight_score)
+                
+                if fight_score > 0.5:
+                    alerts.append({
+                        'type': 'FIGHT_DETECTED',
+                        'severity': 'high' if fight_score > 0.7 else 'medium',
+                        'message': f"Possible fight/altercation detected ({fight_score:.0%})",
+                        'bbox': None
+                    })
+            
+            # Sudden high motion = aggression/panic
+            if len(self.motion_history) >= 5:
+                recent_motion = np.mean(self.motion_history[-5:])
+                older_motion = np.mean(self.motion_history[:-5]) if len(self.motion_history) > 5 else 0
+                
+                if recent_motion > older_motion * 2 and recent_motion > 0.4:
+                    aggression_score = min(recent_motion, 0.85)
+                    violence_score = max(violence_score, aggression_score)
+                    
+                    alerts.append({
+                        'type': 'AGGRESSION_DETECTED',
+                        'severity': 'medium',
+                        'message': f"Sudden aggressive movement detected ({aggression_score:.0%})",
+                        'bbox': None
+                    })
+            
+            # Combine scores
+            overall_danger = max(violence_score, hazard_score)
+            
+            # Safely combine detections
+            all_detections = detections.copy() if detections else []
+            if fire_detections and isinstance(fire_detections, list):
+                all_detections.extend(fire_detections)
+            if smoke_detections and isinstance(smoke_detections, list):
+                all_detections.extend(smoke_detections)
+            
+            return {
+                'violence_score': violence_score,
+                'hazard_score': hazard_score,
+                'overall_danger': overall_danger,
+                'people_count': people_count,
+                'motion_score': motion_score,
+                'alerts': alerts,
+                'detections': all_detections
+            }
         
-        # Combine scores
-        overall_danger = max(violence_score, hazard_score)
-        
-        return {
-            'violence_score': violence_score,
-            'hazard_score': hazard_score,
-            'overall_danger': overall_danger,
-            'people_count': people_count,
-            'motion_score': motion_score,
-            'alerts': alerts,
-            'detections': detections + fire_detections
-        }
+        except Exception as e:
+            logger.error(f"Error in analyze_violence_indicators: {e}")
+            return {
+                'violence_score': 0.0,
+                'hazard_score': 0.0,
+                'overall_danger': 0.0,
+                'people_count': 0,
+                'motion_score': 0.0,
+                'alerts': [],
+                'detections': []
+            }
     
     def process_frame(self, frame):
         """Process a single frame for violence/hazard detection"""
-        # Resize for faster processing
-        process_frame = cv2.resize(frame, (640, 480))
+        try:
+            # Resize for faster processing
+            process_frame = cv2.resize(frame, (640, 480))
+            
+            # Detect objects with YOLO
+            detections = self.detect_objects(process_frame)
+            
+            # Detect motion
+            motion_score, motion_regions = self.detect_motion(process_frame)
+            
+            # Analyze violence indicators
+            analysis = self.analyze_violence_indicators(
+                process_frame, detections, motion_score, motion_regions
+            )
+            
+            # Scale bounding boxes back to original size
+            scale_x = frame.shape[1] / 640
+            scale_y = frame.shape[0] / 480
+            
+            for det in analysis['detections']:
+                if det and det.get('bbox'):
+                    det['bbox'] = [
+                        int(det['bbox'][0] * scale_x),
+                        int(det['bbox'][1] * scale_y),
+                        int(det['bbox'][2] * scale_x),
+                        int(det['bbox'][3] * scale_y)
+                    ]
+            
+            for alert in analysis['alerts']:
+                if alert and alert.get('bbox'):
+                    alert['bbox'] = [
+                        int(alert['bbox'][0] * scale_x),
+                        int(alert['bbox'][1] * scale_y),
+                        int(alert['bbox'][2] * scale_x),
+                        int(alert['bbox'][3] * scale_y)
+                    ]
+            
+            return analysis
         
-        # Detect objects with YOLO
-        detections = self.detect_objects(process_frame)
-        
-        # Detect motion
-        motion_score, motion_regions = self.detect_motion(process_frame)
-        
-        # Analyze violence indicators
-        analysis = self.analyze_violence_indicators(
-            process_frame, detections, motion_score, motion_regions
-        )
-        
-        # Scale bounding boxes back to original size
-        scale_x = frame.shape[1] / 640
-        scale_y = frame.shape[0] / 480
-        
-        for det in analysis['detections']:
-            if det.get('bbox'):
-                det['bbox'] = [
-                    int(det['bbox'][0] * scale_x),
-                    int(det['bbox'][1] * scale_y),
-                    int(det['bbox'][2] * scale_x),
-                    int(det['bbox'][3] * scale_y)
-                ]
-        
-        for alert in analysis['alerts']:
-            if alert.get('bbox'):
-                alert['bbox'] = [
-                    int(alert['bbox'][0] * scale_x),
-                    int(alert['bbox'][1] * scale_y),
-                    int(alert['bbox'][2] * scale_x),
-                    int(alert['bbox'][3] * scale_y)
-                ]
-        
-        return analysis
+        except Exception as e:
+            logger.error(f"Error processing frame: {e}")
+            return {
+                'violence_score': 0.0,
+                'hazard_score': 0.0,
+                'overall_danger': 0.0,
+                'people_count': 0,
+                'motion_score': 0.0,
+                'alerts': [],
+                'detections': []
+            }
     
     def process_video(self, video_path, callback=None):
         """Process entire video and return frame-by-frame analysis"""
