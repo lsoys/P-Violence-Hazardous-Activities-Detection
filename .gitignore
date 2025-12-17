@@ -12,6 +12,7 @@ checkpoints/
 *.h5
 *.pt
 *.pth
+!yolov8n.pt
 # Ignore temporary files
 temp/
 *.tmp

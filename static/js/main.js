@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check API health
     checkApiHealth();
     
-    // Set up event listeners
+    // Set up event listeners for upload section
     featureFileInput.addEventListener('change', handleFileUpload);
     predictBtn.addEventListener('click', handlePredict);
     clearBtn.addEventListener('click', handleClear);
@@ -30,6 +30,70 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.querySelector('[for="feature-file"]').parentElement;
     dropZone.addEventListener('dragover', handleDragOver);
     dropZone.addEventListener('drop', handleDrop);
+    
+    // ===== CAMERA INITIALIZATION =====
+    const videoTabBtn = document.getElementById('video-tab-btn');
+    const cameraTabBtn = document.getElementById('camera-tab-btn');
+    const videoContainer = document.getElementById('video-container');
+    const cameraContainer = document.getElementById('camera-container');
+    const cameraStartBtn = document.getElementById('camera-start-btn');
+    const cameraStopBtn = document.getElementById('camera-stop-btn');
+    
+    console.log('Camera elements found:', {
+        videoTab: !!videoTabBtn,
+        cameraTab: !!cameraTabBtn,
+        videoContainer: !!videoContainer,
+        cameraContainer: !!cameraContainer,
+        startBtn: !!cameraStartBtn,
+        stopBtn: !!cameraStopBtn
+    });
+    
+    // Tab switching
+    if (videoTabBtn && cameraTabBtn && videoContainer && cameraContainer) {
+        videoTabBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Switched to Video tab');
+            videoTabBtn.classList.remove('border-transparent', 'text-slate-400');
+            videoTabBtn.classList.add('border-cyan-500', 'text-cyan-400');
+            cameraTabBtn.classList.remove('border-cyan-500', 'text-cyan-400');
+            cameraTabBtn.classList.add('border-transparent', 'text-slate-400');
+            
+            videoContainer.style.display = 'block';
+            cameraContainer.classList.add('hidden');
+        });
+        
+        cameraTabBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Switched to Camera tab');
+            cameraTabBtn.classList.remove('border-transparent', 'text-slate-400');
+            cameraTabBtn.classList.add('border-cyan-500', 'text-cyan-400');
+            videoTabBtn.classList.remove('border-cyan-500', 'text-cyan-400');
+            videoTabBtn.classList.add('border-transparent', 'text-slate-400');
+            
+            cameraContainer.classList.remove('hidden');
+            videoContainer.style.display = 'none';
+        });
+    } else {
+        console.warn('Tab elements not found:', { videoTabBtn, cameraTabBtn, videoContainer, cameraContainer });
+    }
+    
+    // Camera control buttons
+    if (cameraStartBtn) {
+        console.log('Attaching camera start listener');
+        cameraStartBtn.addEventListener('click', (e) => {
+            console.log('Start camera button clicked');
+            e.preventDefault();
+            startCamera();
+        });
+    }
+    if (cameraStopBtn) {
+        console.log('Attaching camera stop listener');
+        cameraStopBtn.addEventListener('click', (e) => {
+            console.log('Stop camera button clicked');
+            e.preventDefault();
+            stopCamera();
+        });
+    }
 });
 
 // Check API health and status
@@ -381,3 +445,153 @@ document.head.appendChild(style);
 setInterval(checkApiHealth, 30000);
 
 console.log('✓ XDVioDet Frontend Initialized');
+// ============ CAMERA STREAMING FUNCTIONALITY ============
+
+let cameraActive = false;
+let cameraStreamUrl = null;
+let cameraAnalysisInterval = null;
+
+async function startCamera() {
+    try {
+        console.log('Starting camera stream...');
+        
+        const response = await fetch('/api/camera/start', { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            cameraActive = true;
+            cameraStreamUrl = data.stream_url;
+            
+            // Display camera stream
+            const cameraStream = document.getElementById('camera-stream');
+            const cameraPlaceholder = document.getElementById('camera-placeholder');
+            
+            cameraStream.src = cameraStreamUrl;
+            cameraStream.style.display = 'block';
+            cameraPlaceholder.style.display = 'none';
+            
+            // Update button states
+            document.getElementById('camera-start-btn').disabled = true;
+            document.getElementById('camera-stop-btn').disabled = false;
+            
+            // Start polling for analysis updates
+            cameraAnalysisInterval = setInterval(updateCameraAnalysis, 500);
+            
+            showNotification('✓ Camera started successfully!', 'success');
+        } else {
+            showNotification('✗ Failed to start camera: ' + data.error, 'error');
+        }
+    } catch (error) {
+        console.error('Error starting camera:', error);
+        showNotification('✗ Error starting camera', 'error');
+    }
+}
+
+async function stopCamera() {
+    try {
+        console.log('Stopping camera stream...');
+        
+        const response = await fetch('/api/camera/stop', { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            cameraActive = false;
+            
+            // Hide camera stream
+            const cameraStream = document.getElementById('camera-stream');
+            const cameraPlaceholder = document.getElementById('camera-placeholder');
+            
+            cameraStream.src = '';
+            cameraStream.style.display = 'none';
+            cameraPlaceholder.style.display = 'flex';
+            
+            // Update button states
+            document.getElementById('camera-start-btn').disabled = false;
+            document.getElementById('camera-stop-btn').disabled = true;
+            
+            // Stop polling
+            if (cameraAnalysisInterval) {
+                clearInterval(cameraAnalysisInterval);
+            }
+            
+            showNotification('✓ Camera stopped', 'success');
+        } else {
+            showNotification('✗ Failed to stop camera', 'error');
+        }
+    } catch (error) {
+        console.error('Error stopping camera:', error);
+        showNotification('✗ Error stopping camera', 'error');
+    }
+}
+
+async function updateCameraAnalysis() {
+    try {
+        const response = await fetch('/api/camera/analysis');
+        const data = await response.json();
+        
+        if (data.success) {
+            const analysis = data.analysis;
+            
+            // Update danger level
+            const dangerLevel = (analysis.danger_level * 100).toFixed(1);
+            document.getElementById('camera-danger-level').textContent = dangerLevel + '%';
+            
+            // Update violence score
+            const violenceScore = (analysis.violence_score * 100).toFixed(1);
+            document.getElementById('camera-violence-score').textContent = violenceScore + '%';
+            
+            // Update hazard score
+            const hazardScore = (analysis.hazard_score * 100).toFixed(1);
+            document.getElementById('camera-hazard-score').textContent = hazardScore + '%';
+            
+            // Update alerts count
+            document.getElementById('camera-alerts-count').textContent = analysis.alerts.length;
+            
+            // Update alerts list
+            if (analysis.alerts.length > 0) {
+                const alertsList = document.getElementById('camera-alerts-list');
+                alertsList.innerHTML = analysis.alerts.slice(-5).map(alert => {
+                    const alertType = alert.type || 'Unknown';
+                    const confidence = (alert.confidence * 100).toFixed(1);
+                    return `
+                        <div class="flex items-center justify-between p-2 bg-red-900/30 rounded border border-red-700">
+                            <span class="text-red-300">${alertType}</span>
+                            <span class="text-red-400 font-bold">${confidence}%</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Change color based on danger level
+            const dangerLevelEl = document.getElementById('camera-danger-level');
+            if (analysis.danger_level > 0.7) {
+                dangerLevelEl.classList.remove('text-orange-400', 'text-yellow-400');
+                dangerLevelEl.classList.add('text-red-500');
+            } else if (analysis.danger_level > 0.4) {
+                dangerLevelEl.classList.remove('text-red-500', 'text-orange-400');
+                dangerLevelEl.classList.add('text-yellow-400');
+            } else {
+                dangerLevelEl.classList.remove('text-red-500', 'text-yellow-400');
+                dangerLevelEl.classList.add('text-orange-400');
+            }
+        }
+    } catch (error) {
+        console.error('Error updating camera analysis:', error);
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white font-semibold z-50 animate-fade-in ${
+        type === 'success' ? 'bg-green-600' :
+        type === 'error' ? 'bg-red-600' :
+        'bg-blue-600'
+    }`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}

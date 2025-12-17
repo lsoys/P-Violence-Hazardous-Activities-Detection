@@ -3,7 +3,7 @@ XDVioDet Pro - Violence & Hazard Detection System
 Using YOLOv8 + Motion Analysis for high-accuracy detection
 """
 
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, Response
 from flask_cors import CORS
 import numpy as np
 import os
@@ -13,6 +13,8 @@ import time
 import cv2
 import json
 import base64
+import threading
+import queue
 
 # Configure logging
 logging.basicConfig(
@@ -49,6 +51,13 @@ detector = None
 prediction_count = 0
 alert_history = []
 
+# Camera streaming state
+camera_active = False
+camera_thread = None
+camera_lock = threading.Lock()
+frame_queue = queue.Queue(maxsize=2)
+current_analysis = {'alerts': [], 'detections': [], 'danger': 0, 'frame': None}
+
 # Labels
 VIOLENCE_LABELS = {
     'fire': '#FF0000',
@@ -82,6 +91,125 @@ def init_detector():
     except Exception as e:
         logger.error(f"Error initializing detector: {str(e)}", exc_info=True)
         return False
+
+
+def camera_capture_thread():
+    """Background thread for continuous camera capture and analysis"""
+    global camera_active, current_analysis
+    
+    cap = cv2.VideoCapture(0)  # Use default camera
+    if not cap.isOpened():
+        logger.error("Failed to open camera - device may not be available")
+        camera_active = False
+        return
+    
+    # Set camera properties for better performance
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    cap.set(cv2.CAP_PROP_FPS, 30)
+    
+    frame_count = 0
+    analysis_interval = 3  # Analyze every 3rd frame for performance
+    frames_in_queue = 0
+    
+    logger.info("Camera capture thread started - waiting for frames")
+    
+    while camera_active:
+        ret, frame = cap.read()
+        if not ret:
+            logger.warning("Failed to read frame from camera")
+            break
+        
+        frame_count += 1
+        
+        # Resize frame for faster processing
+        frame = cv2.resize(frame, (640, 480))
+        
+        # Analyze every N frames
+        if frame_count % analysis_interval == 0 and detector is not None:
+            try:
+                analysis = detector.process_frame(frame)
+                annotated_frame = detector.draw_detections(frame, analysis)
+                
+                # Update current analysis
+                with camera_lock:
+                    current_analysis = {
+                        'alerts': analysis.get('alerts', []),
+                        'detections': analysis.get('detections', []),
+                        'danger': analysis.get('overall_danger', 0),
+                        'violence_score': analysis.get('violence_score', 0),
+                        'hazard_score': analysis.get('hazard_score', 0),
+                        'frame': annotated_frame,
+                        'timestamp': datetime.now().isoformat()
+                    }
+                    
+                    # Add alerts to history
+                    for alert in analysis.get('alerts', []):
+                        alert_history.append({**alert, 'source': 'camera', 'timestamp': datetime.now().isoformat()})
+                
+                # Put frame in queue for streaming
+                try:
+                    frame_queue.put_nowait(annotated_frame)
+                    frames_in_queue += 1
+                except queue.Full:
+                    pass  # Drop frame if queue is full
+            except Exception as e:
+                logger.error(f"Error during frame analysis: {str(e)}")
+        else:
+            # Still put frame even if not analyzed to maintain stream
+            try:
+                frame_queue.put_nowait(frame)
+                frames_in_queue += 1
+            except queue.Full:
+                pass
+        
+        # Log status every 30 frames
+        if frame_count % 30 == 0:
+            logger.debug(f"Camera: {frame_count} frames captured, {frames_in_queue} in queue")
+    
+    cap.release()
+    logger.info(f"Camera capture thread stopped - captured {frame_count} frames total")
+
+
+
+def generate_frames():
+    """Generator for MJPEG stream"""
+    frame_count = 0
+    logger.info("MJPEG stream started")
+    
+    while camera_active:
+        try:
+            frame = frame_queue.get(timeout=2)
+            if frame is None:
+                continue
+            
+            # Ensure frame is valid
+            if not isinstance(frame, np.ndarray):
+                logger.warning("Invalid frame type in queue")
+                continue
+            
+            ret, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 85])
+            if ret and buffer is not None:
+                frame_count += 1
+                if frame_count % 30 == 0:
+                    logger.debug(f"MJPEG: Streamed {frame_count} frames")
+                
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n'
+                       b'Content-Length: ' + str(len(buffer)).encode() + b'\r\n'
+                       b'X-Frame-Number: ' + str(frame_count).encode() + b'\r\n\r\n'
+                       + buffer.tobytes() + b'\r\n')
+            else:
+                logger.warning("Failed to encode frame to JPEG")
+        except queue.Empty:
+            logger.debug("Frame queue empty, waiting...")
+            continue
+        except Exception as e:
+            logger.error(f"Error generating frame: {str(e)}")
+            break
+    
+    logger.info(f"MJPEG stream ended - served {frame_count} frames")
+
 
 
 def process_video_with_yolo(video_path):
@@ -198,32 +326,69 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/live-detection')
+def live_detection():
+    """Live detection page with camera streaming"""
+    return render_template('live-detection.html')
+
+
+@app.route('/api/status')
+def get_status():
+    """Check server status and detector initialization"""
+    status = {
+        'status': 'healthy',
+        'detector_initialized': detector is not None,
+        'prediction_count': prediction_count,
+        'alert_history_count': len(alert_history),
+        'timestamp': datetime.now().isoformat()
+    }
+    
+    if detector is None:
+        status['status'] = 'degraded'
+        status['error'] = 'AI detector not initialized'
+    
+    return jsonify(status)
+
+
 @app.route('/api/upload-video', methods=['POST'])
 def upload_video():
     global prediction_count, alert_history
     
     try:
         if 'video' not in request.files:
-            return jsonify({'error': 'No video file provided'}), 400
+            return jsonify({'error': 'No video file provided in the request'}), 400
         
         file = request.files['video']
         
         if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
+            return jsonify({'error': 'No file selected - filename is empty'}), 400
         
         file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
         if file_ext not in ALLOWED_VIDEO_FORMATS:
-            return jsonify({'error': f'Invalid format. Allowed: {", ".join(ALLOWED_VIDEO_FORMATS)}'}), 400
+            return jsonify({'error': f'Unsupported video format: {file_ext}. Allowed formats: {", ".join(ALLOWED_VIDEO_FORMATS)}'}), 400
+        
+        # Check if detector is initialized
+        if detector is None:
+            return jsonify({'error': 'AI detector is not initialized. Please check server logs for details.'}), 500
         
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filename = f'video_{timestamp}.{file_ext}'
         video_path = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(video_path)
         
-        logger.info(f"Video uploaded: {video_path}")
+        try:
+            file.save(video_path)
+        except Exception as e:
+            return jsonify({'error': f'Failed to save uploaded file: {str(e)}'}), 500
+        
+        logger.info(f"Video uploaded successfully: {video_path}")
         
         start_time = time.time()
-        results = process_video_with_yolo(video_path)
+        try:
+            results = process_video_with_yolo(video_path)
+        except Exception as e:
+            logger.error(f"Video processing failed: {str(e)}", exc_info=True)
+            return jsonify({'error': f'Video analysis failed: {str(e)}'}), 500
+        
         processing_time = time.time() - start_time
         
         prediction_count += 1
@@ -276,8 +441,8 @@ def upload_video():
         return jsonify(response)
     
     except Exception as e:
-        logger.error(f"Error processing video: {e}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"Unexpected error in upload_video: {str(e)}", exc_info=True)
+        return jsonify({'error': f'Server error: {str(e)}'}), 500
 
 
 @app.route('/api/alerts')
@@ -332,6 +497,111 @@ def uploaded_file(filename):
         return send_from_directory(UPLOAD_FOLDER, filename)
     except Exception:
         return jsonify({'error': 'File not found'}), 404
+
+
+# ============ CAMERA STREAMING ENDPOINTS ============
+
+@app.route('/api/camera/start', methods=['POST'])
+def start_camera():
+    """Start camera streaming"""
+    global camera_active, camera_thread
+    
+    try:
+        if camera_active:
+            return jsonify({'success': False, 'error': 'Camera is already running'}), 400
+        
+        if detector is None:
+            return jsonify({'success': False, 'error': 'Detector not initialized'}), 500
+        
+        camera_active = True
+        camera_thread = threading.Thread(target=camera_capture_thread, daemon=True)
+        camera_thread.start()
+        
+        logger.info("Camera stream started")
+        return jsonify({
+            'success': True,
+            'message': 'Camera stream started successfully',
+            'stream_url': '/api/camera/stream',
+            'analysis_url': '/api/camera/analysis'
+        })
+    except Exception as e:
+        logger.error(f"Error starting camera: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/camera/stop', methods=['POST'])
+def stop_camera():
+    """Stop camera streaming"""
+    global camera_active
+    
+    try:
+        camera_active = False
+        # Give thread time to clean up
+        import time
+        time.sleep(0.5)
+        logger.info("Camera stream stopped")
+        return jsonify({
+            'success': True,
+            'message': 'Camera stream stopped'
+        })
+    except Exception as e:
+        logger.error(f"Error stopping camera: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/camera/stream')
+def camera_stream():
+    """MJPEG stream endpoint"""
+    if not camera_active:
+        return jsonify({'error': 'Camera not active'}), 400
+    
+    return Response(
+        generate_frames(),
+        mimetype='multipart/x-mixed-replace; boundary=frame'
+    )
+
+
+@app.route('/api/camera/analysis')
+def camera_analysis():
+    """Get current camera frame analysis"""
+    global current_analysis
+    
+    try:
+        with camera_lock:
+            analysis_data = {
+                'alerts': current_analysis.get('alerts', []),
+                'detections': current_analysis.get('detections', []),
+                'danger_level': current_analysis.get('danger', 0),
+                'violence_score': current_analysis.get('violence_score', 0),
+                'hazard_score': current_analysis.get('hazard_score', 0),
+                'timestamp': current_analysis.get('timestamp', '')
+            }
+        
+        return jsonify({
+            'success': True,
+            'analysis': analysis_data
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/camera/status')
+def camera_status():
+    """Get camera status"""
+    try:
+        return jsonify({
+            'success': True,
+            'camera_active': camera_active,
+            'detector_ready': detector is not None,
+            'latest_analysis': {
+                'danger_level': current_analysis.get('danger', 0),
+                'alerts_count': len(current_analysis.get('alerts', [])),
+                'timestamp': current_analysis.get('timestamp', '')
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 
 @app.route('/api/model-info')
