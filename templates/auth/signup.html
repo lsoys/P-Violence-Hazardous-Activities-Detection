@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - XDVioDet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Logo/Title -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-2">🛡️ XDVioDet</h1>
+            <p class="text-white text-opacity-90">Violence Detection System</p>
+        </div>
+
+        <!-- Signup Card -->
+        <div class="glass-effect rounded-2xl shadow-2xl p-8">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center">Create Account</h2>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="mb-4 p-4 rounded-lg {% if category == 'danger' %}bg-red-500{% elif category == 'success' %}bg-green-500{% elif category == 'warning' %}bg-yellow-500{% else %}bg-blue-500{% endif %} bg-opacity-90 text-white text-sm">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.signup') }}" class="space-y-5" id="signupForm">
+                <!-- Username -->
+                <div>
+                    <label for="username" class="block text-white text-sm font-medium mb-2">Username</label>
+                    <input type="text" 
+                           id="username" 
+                           name="username" 
+                           required 
+                           minlength="3"
+                           pattern="[a-zA-Z0-9_]+"
+                           value="{{ username or '' }}"
+                           class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition"
+                           placeholder="Choose a username">
+                    <p class="text-white text-opacity-70 text-xs mt-1">Only letters, numbers, and underscores</p>
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="email" class="block text-white text-sm font-medium mb-2">Email Address</label>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           required 
+                           value="{{ email or '' }}"
+                           class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition"
+                           placeholder="your.email@example.com">
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-white text-sm font-medium mb-2">Password</label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           required 
+                           minlength="6"
+                           class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition"
+                           placeholder="Create a strong password">
+                    <p class="text-white text-opacity-70 text-xs mt-1">At least 6 characters</p>
+                </div>
+
+                <!-- Confirm Password -->
+                <div>
+                    <label for="confirm_password" class="block text-white text-sm font-medium mb-2">Confirm Password</label>
+                    <input type="password" 
+                           id="confirm_password" 
+                           name="confirm_password" 
+                           required 
+                           minlength="6"
+                           class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition"
+                           placeholder="Confirm your password">
+                    <p id="password-match-msg" class="text-xs mt-1 hidden"></p>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" 
+                        id="submitBtn"
+                        class="w-full bg-white bg-opacity-90 hover:bg-opacity-100 text-purple-700 font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105 shadow-lg">
+                    Create Account
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="my-6 flex items-center">
+                <div class="flex-grow border-t border-white border-opacity-30"></div>
+                <span class="px-4 text-white text-opacity-70 text-sm">OR</span>
+                <div class="flex-grow border-t border-white border-opacity-30"></div>
+            </div>
+
+            <!-- Login Link -->
+            <div class="text-center">
+                <p class="text-white text-opacity-90">
+                    Already have an account? 
+                    <a href="{{ url_for('auth.login') }}" class="font-bold hover:underline text-white">Sign In</a>
+                </p>
+            </div>
+
+            <!-- Back to Home -->
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('index') }}" class="text-white text-opacity-70 hover:text-opacity-100 text-sm">
+                    ← Back to Home
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-white text-opacity-70 text-sm">
+            <p>© 2024 XDVioDet. Advanced Violence Detection.</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-focus username field
+        document.getElementById('username').focus();
+
+        // Password match validation
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirm_password');
+        const matchMsg = document.getElementById('password-match-msg');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function checkPasswordMatch() {
+            if (confirmPassword.value === '') {
+                matchMsg.classList.add('hidden');
+                return;
+            }
+
+            matchMsg.classList.remove('hidden');
+            if (password.value === confirmPassword.value) {
+                matchMsg.textContent = '✓ Passwords match';
+                matchMsg.classList.remove('text-red-400');
+                matchMsg.classList.add('text-green-400');
+            } else {
+                matchMsg.textContent = '✗ Passwords do not match';
+                matchMsg.classList.remove('text-green-400');
+                matchMsg.classList.add('text-red-400');
+            }
+        }
+
+        password.addEventListener('input', checkPasswordMatch);
+        confirmPassword.addEventListener('input', checkPasswordMatch);
+
+        // Form validation
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            if (password.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert('Passwords do not match!');
+                confirmPassword.focus();
+            }
+        });
+    </script>
+</body>
+</html>

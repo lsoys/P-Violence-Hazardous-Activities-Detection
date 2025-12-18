@@ -1,20 +1,26 @@
 """
 XDVioDet Pro - Violence & Hazard Detection System
 Using YOLOv8 + Motion Analysis for high-accuracy detection
+With User Authentication & Admin Dashboard
 """
 
-from flask import Flask, render_template, request, jsonify, send_from_directory, Response
+from flask import Flask, render_template, request, jsonify, send_from_directory, Response, session
 from flask_cors import CORS
 import numpy as np
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import cv2
 import json
 import base64
 import threading
 import queue
+from dotenv import load_dotenv
+from pymongo import MongoClient
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -45,11 +51,37 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config['JSON_SORT_KEYS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 app.json_encoder = NumpyEncoder
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'xdviodet-secret-key-change-in-production')
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
+
+# MongoDB connection
+try:
+    mongo_uri = os.getenv('MONGODB_URI')
+    if mongo_uri:
+        mongo_client = MongoClient(mongo_uri)
+        db = mongo_client['xdviodet']
+        logger.info("MongoDB connected successfully")
+    else:
+        db = None
+        logger.warning("MongoDB URI not found in .env file")
+except Exception as e:
+    db = None
+    logger.error(f"MongoDB connection failed: {e}")
+
+# Initialize models
+from models.user import User
+from models.detection_session import DetectionSession
+from models.alert import Alert
+
+user_model = User(db) if db is not None else None
+session_model = DetectionSession(db) if db is not None else None
+alert_model = Alert(db) if db is not None else None
 
 # Global state
 detector = None
 prediction_count = 0
 alert_history = []
+current_session_id = None
 
 # Camera streaming state
 camera_active = False
@@ -323,12 +355,28 @@ def process_video_with_yolo(video_path):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    """Home page - accessible to all"""
+    user_info = None
+    if 'user_id' in session and user_model:
+        user_info = {
+            'username': session.get('username'),
+            'role': session.get('user_role'),
+            'is_authenticated': True
+        }
+    return render_template('index.html', user=user_info)
 
 
 @app.route('/live-detection')
 def live_detection():
-    """Live detection page with camera streaming"""
+    """Live detection page with camera streaming - login required"""
+    from auth.decorators import login_required
+    
+    # Check if user is logged in
+    if 'user_id' not in session:
+        from flask import redirect, url_for, flash
+        flash('Please log in to access live detection.', 'warning')
+        return redirect(url_for('auth.login', next=request.url))
+    
     return render_template('live-detection.html')
 
 
@@ -504,7 +552,7 @@ def uploaded_file(filename):
 @app.route('/api/camera/start', methods=['POST'])
 def start_camera():
     """Start camera streaming"""
-    global camera_active, camera_thread
+    global camera_active, camera_thread, current_session_id
     
     try:
         if camera_active:
@@ -512,6 +560,15 @@ def start_camera():
         
         if detector is None:
             return jsonify({'success': False, 'error': 'Detector not initialized'}), 500
+        
+        # Create new detection session in database
+        user_id = session.get('user_id', 'anonymous')
+        if session_model:
+            current_session_id = session_model.create_session(
+                user_id=user_id,
+                session_type='live_camera'
+            )
+            logger.info(f"Created detection session: {current_session_id}")
         
         camera_active = True
         camera_thread = threading.Thread(target=camera_capture_thread, daemon=True)
@@ -522,7 +579,8 @@ def start_camera():
             'success': True,
             'message': 'Camera stream started successfully',
             'stream_url': '/api/camera/stream',
-            'analysis_url': '/api/camera/analysis'
+            'analysis_url': '/api/camera/analysis',
+            'session_id': current_session_id
         })
     except Exception as e:
         logger.error(f"Error starting camera: {str(e)}", exc_info=True)
@@ -532,10 +590,22 @@ def start_camera():
 @app.route('/api/camera/stop', methods=['POST'])
 def stop_camera():
     """Stop camera streaming"""
-    global camera_active
+    global camera_active, current_session_id
     
     try:
         camera_active = False
+        
+        # End session in database with final stats
+        if session_model and current_session_id:
+            with camera_lock:
+                final_stats = {
+                    'status': 'completed',
+                    'ended_at': datetime.utcnow()
+                }
+                session_model.end_session(current_session_id, final_stats)
+                logger.info(f"Ended detection session: {current_session_id}")
+                current_session_id = None
+        
         # Give thread time to clean up
         import time
         time.sleep(0.5)
@@ -552,10 +622,74 @@ def stop_camera():
 @app.route('/api/camera/stream')
 def camera_stream():
     """MJPEG stream endpoint"""
-    if not camera_active:
-        return jsonify({'error': 'Camera not active'}), 400
+    if not camera_active:, current_session_id
     
-    return Response(
+    try:
+        with camera_lock:
+            # Store analysis data in session
+            if session_model and current_session_id and current_analysis:
+                danger_level = current_analysis.get('danger_level', 0)
+                violence_score = current_analysis.get('violence_score', 0.0)
+                hazard_score = current_analysis.get('hazard_score', 0.0)
+                
+                # Get current session data
+                current_session = session_model.get_session(current_session_id)
+                if current_session:
+                    # Update session metrics
+                    update_data = {
+                        'total_frames': current_analysis.get('frame_count', 0),
+                        'max_danger_level': max(danger_level, current_session.get('max_danger_level', 0)),
+                        'avg_violence_score': violence_score,
+                        'avg_hazard_score': hazard_score
+                    }
+                    
+                    # Count violence/fire frames
+                    if violence_score > 0.5:
+                        update_data['violence_frames'] = current_session.get('violence_frames', 0) + 1
+                    
+                    detections = current_analysis.get('detections', [])
+                    for det in detections:
+                        if det.get('class') in ['fire', 'flames']:
+                            update_data['fire_frames'] = current_session.get('fire_frames', 0) + 1
+                        elif det.get('class') in ['gun', 'knife', 'weapon']:
+                            update_data['weapon_count'] = current_session.get('weapon_count', 0) + 1
+                        elif det.get('class') in ['fight', 'violence']:
+                            update_data['fight_count'] = current_session.get('fight_count', 0) + 1
+                    
+                    session_model.update_session(current_session_id, update_data)
+                    
+                    # Create critical alerts in database
+                    if alert_model and danger_level >= 4:  # Critical level
+                        user_id = session.get('user_id', 'anonymous')
+                        alerts_to_store = current_analysis.get('alerts', [])
+                        
+                        for alert in alerts_to_store[-5:]:  # Store last 5 alerts
+                            severity = 'critical' if danger_level >= 4 else 'high'
+                            alert_type = alert.get('type', 'violence')
+                            message = alert.get('message', 'Critical threat detected')
+                            confidence = alert.get('confidence', 0.0)
+                            
+                            alert_model.create_alert(
+                                session_id=current_session_id,
+                                user_id=user_id,
+                                alert_type=alert_type,
+                                severity=severity,
+                                message=message,
+                                confidence=confidence,
+                                metadata={
+                                    'danger_level': danger_level,
+                                    'violence_score': violence_score,
+                                    'hazard_score': hazard_score,
+                                    'detections': detections[:5]  # Store top 5 detections
+                                }
+                            )
+                            
+                            # Update user alert count
+                            if user_model and user_id != 'anonymous':
+                                user_model.increment_alert_count(user_id)
+                        
+                        logger.warning(f"CRITICAL ALERT: Danger level {danger_level} - Stored to database")
+            
         generate_frames(),
         mimetype='multipart/x-mixed-replace; boundary=frame'
     )
@@ -641,17 +775,66 @@ def internal_error(error):
     return jsonify({'error': 'Internal server error'}), 500
 
 
+# Initialize authentication and admin routes
+if user_model and session_model and alert_model:
+    from routes.auth_routes import init_auth_routes
+    from routes.admin_routes import init_admin_routes
+    
+    init_auth_routes(app, user_model)
+    init_admin_routes(app, user_model, session_model, alert_model)
+    logger.info("Authentication and admin routes initialized")
+else:
+    logger.warning("Database models not available - authentication disabled")
+
+
+# Create default admin user if none exists
+def create_default_admin():
+    """Create a default admin user if none exists"""
+    if user_model:
+        try:
+            # Check if any admin exists
+            users, _ = user_model.get_all_users(limit=1)
+            admins = [u for u in users if u.get('role') == 'admin']
+            
+            if not admins:
+                logger.info("No admin user found. Creating default admin...")
+                user_id = user_model.create_user(
+                    username='admin',
+                    email='admin@xdviodet.com',
+                    password='admin123',
+                    role='admin'
+                )
+                if user_id:
+                    logger.info("Default admin created: username='admin', password='admin123'")
+                    logger.warning("⚠️  IMPORTANT: Please change the default admin password!")
+        except Exception as e:
+            logger.error(f"Failed to create default admin: {e}")
+
+
 if __name__ == '__main__':
     print("\n" + "="*60)
     print("  XDVioDet Pro - Violence & Hazard Detection System")
     print("  Powered by YOLOv8 + Motion Analysis")
+    print("  With User Authentication & Admin Dashboard")
     print("="*60)
+    
+    # Create default admin if needed
+    create_default_admin()
+    
     print("\nInitializing YOLOv8 detector...")
     
     if init_detector():
         print("\nDetector ready!")
         print("\nStarting Flask server...")
         print("Access the application at: http://localhost:5000")
+        
+        if user_model:
+            print("\n🔐 Authentication enabled")
+            print("   Default admin: username='admin', password='admin123'")
+            print("   ⚠️  Change the default password after first login!")
+        else:
+            print("\n⚠️  Authentication disabled (MongoDB not connected)")
+        
         print("\nDetection capabilities:")
         print("   - Violence/Fighting detection")
         print("   - Fire/Flames detection")

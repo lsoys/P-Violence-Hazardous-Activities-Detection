@@ -65,6 +65,27 @@
                     <a href="#footer" class="hover:text-orange-400 transition">Contact</a>
                 </div>
                 <div class="flex items-center space-x-4">
+                    {% if user and user.is_authenticated %}
+                        <!-- Authenticated User Menu -->
+                        <span class="text-sm text-slate-300">👤 {{ user.username }}</span>
+                        {% if user.role == 'admin' %}
+                            <a href="/admin/dashboard" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition text-sm">
+                                <i class="fas fa-tachometer-alt mr-1"></i>Admin
+                            </a>
+                        {% endif %}
+                        <a href="{{ url_for('auth.logout') }}" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition text-sm">
+                            Logout
+                        </a>
+                    {% else %}
+                        <!-- Guest Menu -->
+                        <a href="{{ url_for('auth.login') }}" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition text-sm">
+                            Login
+                        </a>
+                        <a href="{{ url_for('auth.signup') }}" class="bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg transition text-sm">
+                            Sign Up
+                        </a>
+                    {% endif %}
+                    
                     <span class="text-sm text-slate-400">v2.0</span>
                     <div id="status-indicator" class="flex items-center space-x-2">
                         <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
