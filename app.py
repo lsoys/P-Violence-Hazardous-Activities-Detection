@@ -622,7 +622,19 @@ def stop_camera():
 @app.route('/api/camera/stream')
 def camera_stream():
     """MJPEG stream endpoint"""
-    if not camera_active:, current_session_id
+    if not camera_active:
+        return jsonify({'error': 'Camera not active'}), 400
+    
+    return Response(
+        generate_frames(),
+        mimetype='multipart/x-mixed-replace; boundary=frame'
+    )
+
+
+@app.route('/api/camera/analysis')
+def camera_analysis():
+    """Get current camera frame analysis"""
+    global current_analysis, current_session_id
     
     try:
         with camera_lock:
@@ -690,18 +702,6 @@ def camera_stream():
                         
                         logger.warning(f"CRITICAL ALERT: Danger level {danger_level} - Stored to database")
             
-        generate_frames(),
-        mimetype='multipart/x-mixed-replace; boundary=frame'
-    )
-
-
-@app.route('/api/camera/analysis')
-def camera_analysis():
-    """Get current camera frame analysis"""
-    global current_analysis
-    
-    try:
-        with camera_lock:
             analysis_data = {
                 'alerts': current_analysis.get('alerts', []),
                 'detections': current_analysis.get('detections', []),
