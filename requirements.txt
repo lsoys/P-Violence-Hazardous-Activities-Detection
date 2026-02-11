@@ -1,0 +1,33 @@
+# Deep Learning
+torch>=1.9.0
+torchvision>=0.10.0
+ultralytics>=8.0.0
+tensorflow>=2.10.0
+
+# Data Processing
+numpy>=1.21.0
+scipy>=1.7.0
+scikit-learn>=0.24.2
+
+# Video Processing
+opencv-python>=4.5.0
+
+# Web Framework
+Flask>=2.2.2
+Flask-CORS>=3.0.10
+Werkzeug>=2.2.2
+Flask-Login>=0.6.2
+
+# Database
+pymongo>=4.3.3
+
+# Authentication & Security
+bcrypt>=4.0.1
+PyJWT>=2.8.0
+
+# Utilities
+python-dotenv>=0.20.0
+tqdm>=4.64.0
+
+# Note: server-side audio playback removed (handled in-browser). If needed,
+# add a compatible server audio library for your deployment platform.

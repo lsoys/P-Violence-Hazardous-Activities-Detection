@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  xdviodet:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: xdviodet-app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./ckpt:/app/ckpt
+      - ./list:/app/list
+      - ./uploads:/app/uploads
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=False
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - xdviodet-network
+
+networks:
+  xdviodet-network:
+    driver: bridge

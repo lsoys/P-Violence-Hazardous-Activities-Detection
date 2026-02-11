@@ -1,0 +1,75 @@
+|-- .env
+|-- .gitignore
+|-- app.py
+|-- auth
+    |-- decorators.py
+    |-- __pycache__
+        |-- decorators.cpython-310.pyc
+|-- AUTH_IMPLEMENTATION_COMPLETE.md
+|-- CAMERA_QUICK_START.md
+|-- CAMERA_STREAMING.md
+|-- ckpt
+    |-- scvd_features.pkl
+    |-- training_results.json
+    |-- wsanodet_mix2.pkl
+|-- dataset.py
+|-- detector.py
+|-- docker-compose.yml
+|-- Dockerfile
+|-- layers.py
+|-- list
+    |-- audio.list
+    |-- audio_test.list
+    |-- flow.list
+    |-- flow_test.list
+    |-- gt.npy
+    |-- make_gt.py
+    |-- make_list.py
+    |-- rgb.list
+    |-- rgb_test.list
+|-- LIVE_DETECTION_STORAGE.md
+|-- main.py
+|-- model.py
+|-- models
+    |-- alert.py
+    |-- detection_session.py
+    |-- user.py
+    |-- __pycache__
+        |-- alert.cpython-310.pyc
+        |-- detection_session.cpython-310.pyc
+        |-- user.cpython-310.pyc
+|-- option.py
+|-- QUICK_START.md
+|-- README.md
+|-- requirements.txt
+|-- routes
+    |-- admin_routes.py
+    |-- auth_routes.py
+    |-- __pycache__
+        |-- admin_routes.cpython-310.pyc
+        |-- auth_routes.cpython-310.pyc
+|-- static
+    |-- js
+        |-- admin.js
+        |-- detection.js
+        |-- detection_old.js
+        |-- live-detection.js
+        |-- main.js
+        |-- video.js
+|-- templates
+    |-- admin
+        |-- dashboard.html
+    |-- auth
+        |-- login.html
+        |-- signup.html
+    |-- index.html
+    |-- index.html.bak
+    |-- index.html.old
+    |-- live-detection.html
+|-- train_final.py
+|-- uploads
+    |-- frames
+|-- utils.py
+|-- yolov8n.pt
+|-- __pycache__
+    |-- detector.cpython-310.pyc

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - EdgeSafe AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Logo/Title -->
+        <div class="text-center mb-8">
+            <h1 class="text-5xl font-bold text-white mb-2">🛡️ EdgeSafe AI</h1>
+            <p class="text-white text-opacity-90">Hazardous Situation Detection System</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="glass-effect rounded-2xl shadow-2xl p-8">
+            <h2 class="text-3xl font-bold text-white mb-6 text-center">Welcome Back</h2>
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="mb-4 p-4 rounded-lg {% if category == 'danger' %}bg-red-500{% elif category == 'success' %}bg-green-500{% elif category == 'warning' %}bg-yellow-500{% else %}bg-blue-500{% endif %} bg-opacity-90 text-white">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-6">
+                <!-- Username -->
+                <div>
+                    <label for="username" class="block text-white text-sm font-medium mb-2">Username</label>
+                    <input type="text" 
+                           id="username" 
+                           name="username" 
+                           required 
+                           class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition"
+                           placeholder="Enter your username">
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label for="password" class="block text-white text-sm font-medium mb-2">Password</label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           required 
+                           class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-60 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 transition"
+                           placeholder="Enter your password">
+                </div>
+
+                <!-- Remember Me -->
+                <div class="flex items-center">
+                    <input type="checkbox" 
+                           id="remember" 
+                           name="remember" 
+                           class="w-4 h-4 rounded border-white border-opacity-30 bg-white bg-opacity-20 text-purple-600 focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                    <label for="remember" class="ml-2 text-white text-sm">Remember me</label>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" 
+                        class="w-full bg-white bg-opacity-90 hover:bg-opacity-100 text-purple-700 font-bold py-3 px-4 rounded-lg transition duration-300 transform hover:scale-105 shadow-lg">
+                    Sign In
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="my-6 flex items-center">
+                <div class="flex-grow border-t border-white border-opacity-30"></div>
+                <span class="px-4 text-white text-opacity-70 text-sm">OR</span>
+                <div class="flex-grow border-t border-white border-opacity-30"></div>
+            </div>
+
+            <!-- Sign Up Link -->
+            <div class="text-center">
+                <p class="text-white text-opacity-90">
+                    Don't have an account? 
+                    <a href="{{ url_for('auth.signup') }}" class="font-bold hover:underline text-white">Sign Up</a>
+                </p>
+            </div>
+
+            <!-- Back to Home -->
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('index') }}" class="text-white text-opacity-70 hover:text-opacity-100 text-sm">
+                    ← Back to Home
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-white text-opacity-70 text-sm">
+            <p>© 2026 EdgeSafe AI Platform. Advanced Hazard Detection.</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-focus username field
+        document.getElementById('username').focus();
+    </script>
+</body>
+</html>

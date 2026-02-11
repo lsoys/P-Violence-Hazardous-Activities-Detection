@@ -1,0 +1,39 @@
+venv/
+__pycache__/
+*.pyo
+.DS_Store
+.vscode/
+.idea/
+
+logs/
+results/
+
+# Ignore model checkpoints
+checkpoints/
+*.h5
+*.pt
+*.pth
+!yolov8n.pt
+# Ignore temporary files
+temp/
+*.tmp
+*.log
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+SCVD/
+.venv/
+uploads/
+*.egg-info/
+# Ignore coverage reports
+htmlcov/
+.coverage
+# Ignore system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+# Ignore other IDE files    
+*.sublime-project
+*.sublime-workspace
+*.iml   
+# Ignore compiled C/C++ files
+*.o 

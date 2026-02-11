@@ -1,0 +1,73 @@
+/* Global Styles & Animations */
+.hero-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.gradient-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Animations */
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.danger-high {
+    animation: danger-pulse 0.5s infinite;
+}
+
+@keyframes danger-pulse {
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(220, 38, 38, 0.8);
+    }
+    50% { 
+        box-shadow: 0 0 40px rgba(220, 38, 38, 1);
+    }
+}
+
+/* Detection Styles */
+.violence-marker {
+    position: absolute;
+    height: 100%;
+    opacity: 0.7;
+    border-left: 3px solid;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.violence-marker:hover {
+    opacity: 1;
+}
+
+.high-violence {
+    background-color: rgba(220, 38, 38, 0.3);
+    border-left-color: #dc2626;
+}
+
+.medium-violence {
+    background-color: rgba(249, 115, 22, 0.3);
+    border-left-color: #f97316;
+}
+
+.low-violence {
+    background-color: rgba(234, 179, 8, 0.3);
+    border-left-color: #eab308;
+}
+
+#annotation-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+}

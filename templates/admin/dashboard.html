@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - EdgeSafe AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold">🛡️ EdgeSafe AI Admin</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm">Welcome, <strong>{{ session.username }}</strong></span>
+                    <a href="{{ url_for('index') }}" class="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg transition">
+                        Home
+                    </a>
+                    <a href="{{ url_for('auth.logout') }}" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+            <p class="text-gray-600">Monitor and manage EdgeSafe AI Platform</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div id="statsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Loading state -->
+            <div class="col-span-4 text-center py-8">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                <p class="text-gray-600 mt-2">Loading statistics...</p>
+            </div>
+        </div>
+
+        <!-- Critical Alerts Banner -->
+        <div id="criticalAlertsBanner" class="hidden mb-6 bg-red-500 text-white rounded-lg shadow-lg p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="text-3xl animate-pulse">🚨</div>
+                    <div>
+                        <h3 class="text-xl font-bold">CRITICAL ALERTS</h3>
+                        <p id="criticalAlertsMessage" class="text-sm opacity-90">Loading...</p>
+                    </div>
+                </div>
+                <button onclick="viewCriticalAlerts()" class="bg-white text-red-600 px-4 py-2 rounded-lg font-semibold hover:bg-red-50 transition">
+                    View Details
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="bg-white rounded-lg shadow-md mb-6">
+            <div class="border-b border-gray-200">
+                <div class="flex space-x-4 p-4">
+                    <button class="tab-button active px-6 py-2 rounded-lg transition" data-tab="users">
+                        Users
+                    </button>
+                    <button class="tab-button px-6 py-2 rounded-lg transition hover:bg-gray-100" data-tab="sessions">
+                        Detection Sessions
+                    </button>
+                    <a href="{{ url_for('admin.detections') }}" class="px-6 py-2 rounded-lg transition hover:bg-gray-100 flex items-center">
+                        <i class="fas fa-history mr-2"></i> Detection History
+                    </a>
+                    <button class="tab-button px-6 py-2 rounded-lg transition hover:bg-gray-100" data-tab="alerts">
+                        Alerts
+                    </button>
+                    <button class="tab-button px-6 py-2 rounded-lg transition hover:bg-gray-100" data-tab="analytics">
+                        Analytics
+                    </button>
+                    <a href="{{ url_for('admin.docs') }}"
+                        class="px-6 py-2 rounded-lg transition hover:bg-gray-100 flex items-center text-blue-600">
+                        <i class="fas fa-book mr-2"></i> Documentation
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="p-6">
+                <!-- Users Tab -->
+                <div id="usersTab" class="tab-content">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">User Management</h2>
+                        <input type="text" id="userSearch" placeholder="Search users..." class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
+                    </div>
+                    <div id="usersTable" class="overflow-x-auto">
+                        <div class="text-center py-8">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                        </div>
+                    </div>
+                    <div id="usersPagination" class="mt-4 flex justify-center"></div>
+                </div>
+
+                <!-- Sessions Tab -->
+                <div id="sessionsTab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">Detection Sessions</h2>
+                        <select id="sessionTypeFilter" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
+                            <option value="">All Types</option>
+                            <option value="video_upload">Video Upload</option>
+                            <option value="live_camera">Live Camera</option>
+                        </select>
+                    </div>
+                    <div id="sessionsTable" class="overflow-x-auto">
+                        <div class="text-center py-8">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                        </div>
+                    </div>
+                    <div id="sessionsPagination" class="mt-4 flex justify-center"></div>
+                </div>
+
+                <!-- Alerts Tab -->
+                <div id="alertsTab" class="tab-content hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">System Alerts</h2>
+                        <div class="flex space-x-2">
+                            <select id="alertSeverityFilter" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
+                                <option value="">All Severities</option>
+                                <option value="critical">Critical</option>
+                                <option value="high">High</option>
+                                <option value="medium">Medium</option>
+                                <option value="low">Low</option>
+                            </select>
+                            <select id="alertTypeFilter" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600">
+                                <option value="">All Types</option>
+                                <option value="violence">Violence</option>
+                                <option value="fire">Fire</option>
+                                <option value="smoke">Smoke</option>
+                                <option value="weapon">Weapon</option>
+                                <option value="fight">Fight</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="alertsTable" class="overflow-x-auto">
+                        <div class="text-center py-8">
+                            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                        </div>
+                    </div>
+                    <div id="alertsPagination" class="mt-4 flex justify-center"></div>
+                </div>
+
+                <!-- Analytics Tab -->
+                <div id="analyticsTab" class="tab-content hidden">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">System Analytics</h2>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-lg border">
+                            <h3 class="text-lg font-semibold mb-4">Detection Activity (Last 7 Days)</h3>
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg border">
+                            <h3 class="text-lg font-semibold mb-4">Alert Distribution</h3>
+                            <canvas id="alertsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/admin.js"></script>
+</body>
+</html>
