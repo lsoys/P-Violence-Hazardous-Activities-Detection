@@ -1,15 +1,22 @@
+<<<<<<< HEAD
+=======
 """
 XDVioDet Pro - Violence & Hazard Detection System
 Using YOLOv8 + Motion Analysis for high-accuracy detection
 With User Authentication & Admin Dashboard
 """
 
+>>>>>>> uploaded
 from flask import Flask, render_template, request, jsonify, send_from_directory, Response, session
 from flask_cors import CORS
 import numpy as np
 import os
 import logging
 from datetime import datetime, timedelta
+<<<<<<< HEAD
+from pymongo import MongoClient
+from dotenv import load_dotenv
+=======
 import time
 import cv2
 import json
@@ -18,11 +25,17 @@ import threading
 import queue
 from dotenv import load_dotenv
 from pymongo import MongoClient
+>>>>>>> uploaded
 
 # Load environment variables
 load_dotenv()
 
 # Configure logging
+<<<<<<< HEAD
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+=======
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -44,13 +57,17 @@ class NumpyEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
+>>>>>>> uploaded
 # Initialize Flask app
 app = Flask(__name__, template_folder='templates', static_folder='static')
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+<<<<<<< HEAD
+=======
 app.config['JSON_SORT_KEYS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024
 app.json_encoder = NumpyEncoder
+>>>>>>> uploaded
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'xdviodet-secret-key-change-in-production')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
@@ -73,6 +90,50 @@ from models.user import User
 from models.detection_session import DetectionSession
 from models.alert import Alert
 
+<<<<<<< HEAD
+# Initialize models with fallback to mocks
+if db is not None:
+    user_model = User(db)
+    session_model = DetectionSession(db)
+    alert_model = Alert(db)
+else:
+    logger.warning("MongoDB connection failed. Using MOCK models for demonstration.")
+    from models.mock_models import MockUser, MockSession, MockAlert
+    user_model = MockUser()
+    session_model = MockSession()
+    alert_model = MockAlert()
+
+# Routes
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/live-detection')
+def live_detection():
+    return render_template('live-detection.html')
+
+# Initialize authentication and admin routes
+# Always initialize routes (using real or mock models)
+from routes.auth_routes import init_auth_routes
+from routes.admin_routes import init_admin_routes
+
+init_auth_routes(app, user_model)
+init_admin_routes(app, user_model, session_model, alert_model)
+logger.info("Authentication and admin routes initialized")
+
+# Register Camera Routes
+from routes.camera_routes import camera_bp
+from routes.video_routes import video_bp
+from routes.api_routes import api_bp
+
+app.register_blueprint(camera_bp)
+app.register_blueprint(video_bp)
+app.register_blueprint(api_bp)
+logger.info("Camera, Video, and API routes registered")
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
+=======
 user_model = User(db) if db is not None else None
 session_model = DetectionSession(db) if db is not None else None
 alert_model = Alert(db) if db is not None else None
@@ -854,3 +915,4 @@ if __name__ == '__main__':
         print("Please install required packages:")
         print("   pip install ultralytics opencv-python")
         exit(1)
+>>>>>>> uploaded

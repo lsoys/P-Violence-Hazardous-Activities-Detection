@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
+    <title>Live Detection - EdgeSafe AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+=======
     <title>Live Detection - XDVioDet</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -30,6 +37,7 @@
             }
         }
     </style>
+>>>>>>> uploaded
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
     <!-- Navigation Header -->
@@ -41,7 +49,11 @@
                         <i class="fas fa-shield-alt text-white text-lg"></i>
                     </div>
                     <span class="text-2xl font-bold bg-gradient-to-r from-red-400 to-orange-500 bg-clip-text text-transparent">
+<<<<<<< HEAD
+                        EdgeSafe AI
+=======
                         XDVioDet
+>>>>>>> uploaded
                     </span>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
@@ -49,8 +61,32 @@
                     <a href="/live-detection" class="text-orange-400 font-semibold transition">Live Detection</a>
                     <a href="/#detection" class="hover:text-orange-400 transition">Upload</a>
                     <a href="/#about" class="hover:text-orange-400 transition">About</a>
+<<<<<<< HEAD
+                    <a href="{{ url_for('admin.dashboard') }}" class="hover:text-orange-400 transition">
+                        <i class="fas fa-user-shield mr-1"></i>Admin
+                    </a>
+                    {% if session.get('user_role') == 'admin' %}
+                    <a href="{{ url_for('admin.dashboard') }}"
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition flex items-center">
+                        <i class="fas fa-user-shield mr-2"></i> Admin Panel
+                    </a>
+                    {% endif %}
                 </div>
                 <div class="flex items-center space-x-4">
+                    {% if session.get('user_id') %}
+                    <span class="text-sm text-slate-300">👤 {{ session.get('username') }}</span>
+                    <a href="{{ url_for('auth.logout') }}" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition text-sm">
+                        Logout
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition text-sm">
+                        Login
+                    </a>
+                    {% endif %}
+=======
+                </div>
+                <div class="flex items-center space-x-4">
+>>>>>>> uploaded
                     <span class="text-sm text-slate-400">v3.0</span>
                     <div id="status-indicator" class="flex items-center space-x-2">
                         <div class="w-2 h-2 bg-green-500 rounded-full pulse-animation"></div>

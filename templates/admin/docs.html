@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Documentation - EdgeSafe AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+        .doc-section {
+            scroll-margin-top: 5rem;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold text-cyan-400">🛡️ EdgeSafe AI Docs</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{{ url_for('admin.dashboard') }}" class="hover:text-cyan-400 px-3 py-2 transition">Dashboard</a>
+                    <a href="{{ url_for('index') }}" class="bg-white bg-opacity-10 hover:bg-opacity-20 px-4 py-2 rounded-lg transition">Home</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex gap-8">
+        <!-- Sidebar -->
+        <aside class="hidden lg:block w-64 shrink-0">
+            <div class="sticky top-24 space-y-2">
+                <a href="#live-detection" class="block px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg transition font-medium">Live Detection</a>
+                <a href="#alert-storage" class="block px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg transition font-medium">Alert Storage</a>
+                <a href="#detection-history" class="block px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg transition font-medium">Reviewing History</a>
+                <a href="#ai-models" class="block px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg transition font-medium">AI Models</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 space-y-12">
+            <section id="live-detection" class="doc-section">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6 flex items-center">
+                    <i class="fas fa-camera-retro mr-3 text-cyan-600"></i> How Live Detection Works
+                </h2>
+                <div class="prose prose-slate max-w-none bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+                    <p class="text-lg text-slate-600 mb-4">
+                        The EdgeSafe AI system utilizes a multi-layered approach to identify hazardous activities in real-time.
+                    </p>
+                    <ul class="space-y-4 text-slate-600">
+                        <li>
+                            <strong class="text-slate-800">Visual Analysis:</strong> The system processes the video stream at 30 frames per second using YOLOv8 (You Only Look Once) to identify objects like people, weapons, and tools.
+                        </li>
+                        <li>
+                            <strong class="text-slate-800">Motion Analysis:</strong> High-speed movement and rapid frame changes are analyzed to detect fighting, panic, or aggressive actions.
+                        </li>
+                        <li>
+                            <strong class="text-slate-800">Environmental Hazards:</strong> Specific HSV color range analysis is performed to detect fire and smoke signatures.
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="alert-storage" class="doc-section">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6 flex items-center">
+                    <i class="fas fa-database mr-3 text-cyan-600"></i> How Alerts are Stored
+                </h2>
+                <div class="prose prose-slate max-w-none bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+                    <p class="text-slate-600 mb-4">
+                        When the system detects a threat with a confidence level exceeding <span class="font-mono bg-slate-100 px-2 py-1 rounded">0.60 (60%)</span>, it automatically triggers an evidence capture event.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-slate-800 mb-2">Saved Evidence</h4>
+                            <ul class="text-sm space-y-2">
+                                <li>High-resolution JPEG frame of the event</li>
+                                <li>JSON metadata containing detection scores</li>
+                                <li>List of specific objects/hazards identified</li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-slate-800 mb-2">Storage Policy</h4>
+                            <ul class="text-sm space-y-2">
+                                <li>Stored in <span class="font-mono">/uploads/violence_events</span></li>
+                                <li>10-second cooldown between consecutive captures</li>
+                                <li>Timestamp-based filenames for easy sorting</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="detection-history" class="doc-section">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6 flex items-center">
+                    <i class="fas fa-history mr-3 text-cyan-600"></i> Reviewing Detection History
+                </h2>
+                <div class="prose prose-slate max-w-none bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+                    <p class="text-slate-600">
+                        Administrators can review all captured events in the <a href="{{ url_for('admin.detections') }}" class="text-cyan-600 font-bold hover:underline">Detection History</a> tab. Each record provides:
+                    </p>
+                    <div class="mt-6 space-y-4">
+                        <div class="flex items-start">
+                            <div class="bg-cyan-100 p-2 rounded-full mr-4 text-cyan-700">
+                                <i class="fas fa-search-plus"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-slate-800">Visual Verification</h5>
+                                <p class="text-sm text-slate-500">Full-size image view to manually verify the detected threat.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-cyan-100 p-2 rounded-full mr-4 text-cyan-700">
+                                <i class="fas fa-file-download"></i>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-slate-800">Evidence Export</h5>
+                                <p class="text-sm text-slate-500">Download button to save the evidence locally for reporting purposes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="mt-24 py-12 bg-slate-900 text-white text-center">
+        <p>&copy; 2026 EdgeSafe AI Platform Documentation</p>
+    </footer>
+</body>
+</html>

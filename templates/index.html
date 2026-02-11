@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
+    <title>EdgeSafe AI - AI-Powered Hazardous Situation Detection System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+=======
     <title>XDVioDet - AI-Powered Violence Detection System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -41,6 +48,7 @@
             display: block;
         }
     </style>
+>>>>>>> uploaded
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
     <!-- Navigation Header -->
@@ -52,7 +60,11 @@
                         <i class="fas fa-shield-alt text-white text-lg"></i>
                     </div>
                     <span class="text-2xl font-bold bg-gradient-to-r from-red-400 to-orange-500 bg-clip-text text-transparent">
+<<<<<<< HEAD
+                        EdgeSafe AI
+=======
                         XDVioDet
+>>>>>>> uploaded
                     </span>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
@@ -62,6 +74,23 @@
                     </a>
                     <a href="#detection" class="hover:text-orange-400 transition">Detection</a>
                     <a href="#about" class="hover:text-orange-400 transition">About</a>
+<<<<<<< HEAD
+                    <a href="{{ url_for('admin.dashboard') }}" class="hover:text-orange-400 transition">
+                        <i class="fas fa-user-shield mr-1"></i>Admin
+                    </a>
+                    {% if session.get('user_role') == 'admin' %}
+                    <a href="{{ url_for('admin.dashboard') }}"
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition flex items-center">
+                        <i class="fas fa-user-shield mr-2"></i> Admin Panel
+                    </a>
+                    {% endif %}
+                    <a href="#footer" class="hover:text-orange-400 transition">Contact</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    {% if session.get('user_id') %}
+                        <!-- Authenticated User Menu -->
+                        <span class="text-sm text-slate-300">👤 {{ session.get('username') }}</span>
+=======
                     <a href="#footer" class="hover:text-orange-400 transition">Contact</a>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -73,6 +102,7 @@
                                 <i class="fas fa-tachometer-alt mr-1"></i>Admin
                             </a>
                         {% endif %}
+>>>>>>> uploaded
                         <a href="{{ url_for('auth.logout') }}" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition text-sm">
                             Logout
                         </a>
@@ -100,10 +130,17 @@
     <section id="home" class="hero-gradient py-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-5xl md:text-6xl font-bold mb-4">
+<<<<<<< HEAD
+                AI-Powered Hazardous Situation Detection
+            </h1>
+            <p class="text-xl text-blue-100 mb-8">
+                Detect and analyze hazardous activities in videos with advanced deep learning
+=======
                 AI-Powered Violence Detection
             </h1>
             <p class="text-xl text-blue-100 mb-8">
                 Detect and analyze violent content in videos with advanced deep learning
+>>>>>>> uploaded
             </p>
             <a href="#detection" class="inline-block px-8 py-3 bg-white text-purple-600 font-bold rounded-lg hover:shadow-lg transition transform hover:scale-105">
                 Get Started <i class="fas fa-arrow-right ml-2"></i>
@@ -237,7 +274,11 @@
 
                     <!-- Timeline with Violence Markers -->
                     <div class="bg-slate-700/30 rounded-lg p-4">
+<<<<<<< HEAD
+                        <p class="text-slate-400 text-sm mb-3">Hazardous Situation Timeline</p>
+=======
                         <p class="text-slate-400 text-sm mb-3">Violence Detection Timeline</p>
+>>>>>>> uploaded
                         <div id="violence-timeline" class="w-full h-12 bg-slate-700 rounded-lg relative overflow-hidden cursor-pointer group">
                             <div class="absolute inset-0 flex items-center text-xs text-slate-500 pointer-events-none">
                                 <span class="ml-2">Start</span>
@@ -419,6 +460,17 @@
             <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8">
                 <h2 class="text-3xl font-bold mb-6 flex items-center">
                     <i class="fas fa-info-circle mr-3 text-blue-500"></i>
+<<<<<<< HEAD
+                    About EdgeSafe AI
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4 text-orange-400">What is EdgeSafe AI?</h3>
+                        <p class="text-slate-300 mb-4">
+                            EdgeSafe AI is an advanced AI-powered video hazardous situation detection system built on deep learning and
+                            spatial-temporal analysis. It analyzes video content frame-by-frame to identify and classify hazardous activities with
+                            high accuracy.
+=======
                     About XDVioDet
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -426,6 +478,7 @@
                         <h3 class="text-xl font-bold mb-4 text-orange-400">What is XDVioDet?</h3>
                         <p class="text-slate-300 mb-4">
                             XDVioDet is an advanced AI-powered video violence detection system built on deep learning and graph neural networks. It analyzes video content frame-by-frame to identify and classify violent activities with high accuracy.
+>>>>>>> uploaded
                         </p>
                         <h3 class="text-xl font-bold mb-4 text-orange-400">Technology Stack</h3>
                         <ul class="text-slate-300 space-y-2">
@@ -438,11 +491,19 @@
                     <div>
                         <h3 class="text-xl font-bold mb-4 text-orange-400">Key Features</h3>
                         <ul class="text-slate-300 space-y-2">
+<<<<<<< HEAD
+                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Real-time Hazardous Detection</li>
+                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Frame-by-Frame Analysis</li>
+                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Interactive Video Player</li>
+                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Confidence Scoring</li>
+                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Hazard Detection Timeline</li>
+=======
                             <li><i class="fas fa-star text-yellow-400 mr-2"></i>Real-time Violence Detection</li>
                             <li><i class="fas fa-star text-yellow-400 mr-2"></i>Frame-by-Frame Analysis</li>
                             <li><i class="fas fa-star text-yellow-400 mr-2"></i>Interactive Video Player</li>
                             <li><i class="fas fa-star text-yellow-400 mr-2"></i>Confidence Scoring</li>
                             <li><i class="fas fa-star text-yellow-400 mr-2"></i>Violence Detection Timeline</li>
+>>>>>>> uploaded
                             <li><i class="fas fa-star text-yellow-400 mr-2"></i>YOLO-Style Detection Boxes</li>
                         </ul>
                     </div>
@@ -471,9 +532,16 @@
                 <div>
                     <h3 class="text-lg font-bold mb-4 flex items-center">
                         <i class="fas fa-shield-alt mr-2 text-orange-500"></i>
+<<<<<<< HEAD
+                        EdgeSafe AI
+                    </h3>
+                    <p class="text-slate-400 text-sm">Advanced AI-powered hazardous situation detection system for video analysis and
+                        safety.</p>
+=======
                         XDVioDet
                     </h3>
                     <p class="text-slate-400 text-sm">Advanced AI-powered violence detection system for video analysis and safety.</p>
+>>>>>>> uploaded
                 </div>
                 <div>
                     <h4 class="text-sm font-bold mb-4 text-orange-400">Quick Links</h4>
@@ -505,7 +573,12 @@
             </div>
             <div class="border-t border-slate-700 pt-8">
                 <div class="flex flex-col md:flex-row justify-between items-center">
+<<<<<<< HEAD
+                    <p class="text-slate-400 text-sm">© 2026 EdgeSafe AI. All rights reserved. Built with <i
+                            class="fas fa-heart text-red-500"></i> for safety.</p>
+=======
                     <p class="text-slate-400 text-sm">© 2025 XDVioDet. All rights reserved. Built with <i class="fas fa-heart text-red-500"></i> for safety.</p>
+>>>>>>> uploaded
                     <div class="flex space-x-6 mt-4 md:mt-0 text-sm text-slate-400">
                         <a href="#" class="hover:text-orange-400 transition">Privacy Policy</a>
                         <a href="#" class="hover:text-orange-400 transition">Terms of Service</a>
