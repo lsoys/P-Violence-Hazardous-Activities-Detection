@@ -3,11 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<<<<<<< HEAD
     <title>Live Detection - EdgeSafe AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+=======
+    <title>Live Detection - XDVioDet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .danger-high {
+            animation: danger-pulse 0.5s infinite;
+        }
+        @keyframes danger-pulse {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(220, 38, 38, 0.8);
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(220, 38, 38, 1);
+            }
+        }
+    </style>
+>>>>>>> uploaded
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
     <!-- Navigation Header -->
@@ -19,7 +49,11 @@
                         <i class="fas fa-shield-alt text-white text-lg"></i>
                     </div>
                     <span class="text-2xl font-bold bg-gradient-to-r from-red-400 to-orange-500 bg-clip-text text-transparent">
+<<<<<<< HEAD
                         EdgeSafe AI
+=======
+                        XDVioDet
+>>>>>>> uploaded
                     </span>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
@@ -27,6 +61,7 @@
                     <a href="/live-detection" class="text-orange-400 font-semibold transition">Live Detection</a>
                     <a href="/#detection" class="hover:text-orange-400 transition">Upload</a>
                     <a href="/#about" class="hover:text-orange-400 transition">About</a>
+<<<<<<< HEAD
                     <a href="{{ url_for('admin.dashboard') }}" class="hover:text-orange-400 transition">
                         <i class="fas fa-user-shield mr-1"></i>Admin
                     </a>
@@ -48,6 +83,10 @@
                         Login
                     </a>
                     {% endif %}
+=======
+                </div>
+                <div class="flex items-center space-x-4">
+>>>>>>> uploaded
                     <span class="text-sm text-slate-400">v3.0</span>
                     <div id="status-indicator" class="flex items-center space-x-2">
                         <div class="w-2 h-2 bg-green-500 rounded-full pulse-animation"></div>

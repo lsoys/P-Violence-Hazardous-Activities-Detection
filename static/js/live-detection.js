@@ -61,12 +61,15 @@ async function startLiveCamera() {
         console.log('Starting live camera...');
         
         const response = await fetch('/api/camera/start', { method: 'POST' });
+<<<<<<< HEAD
 
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Server error: ${response.status} - ${errorText}`);
         }
 
+=======
+>>>>>>> uploaded
         const data = await response.json();
         
         if (data.success) {
@@ -131,11 +134,14 @@ async function stopLiveCamera() {
         console.log('Stopping live camera...');
         
         const response = await fetch('/api/camera/stop', { method: 'POST' });
+<<<<<<< HEAD
 
         if (!response.ok) {
             throw new Error(`Server error: ${response.status}`);
         }
 
+=======
+>>>>>>> uploaded
         const data = await response.json();
         
         if (data.success) {
@@ -179,12 +185,15 @@ async function stopLiveCamera() {
 async function updateLiveAnalysis() {
     try {
         const response = await fetch('/api/camera/analysis');
+<<<<<<< HEAD
 
         if (!response.ok) {
             // Silently fail for polling updates to avoid console spam
             return;
         }
 
+=======
+>>>>>>> uploaded
         const data = await response.json();
         
         if (data.success) {

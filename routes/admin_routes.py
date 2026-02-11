@@ -1,14 +1,24 @@
 """Admin routes for user management and analytics."""
+<<<<<<< HEAD
 import os
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, send_from_directory
+=======
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
+>>>>>>> uploaded
 from auth.decorators import admin_required
 from bson import ObjectId
 from datetime import datetime, timedelta
 
+<<<<<<< HEAD
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 # Constants for evidence storage
 UPLOAD_FOLDER = 'uploads/violence_events'
+=======
+
+admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+>>>>>>> uploaded
 
 def init_admin_routes(app, user_model, session_model, alert_model):
     """Initialize admin routes with models."""
@@ -19,6 +29,7 @@ def init_admin_routes(app, user_model, session_model, alert_model):
         """Admin dashboard main page."""
         return render_template('admin/dashboard.html')
     
+<<<<<<< HEAD
     @admin_bp.route('/detections')
     @admin_required
     def detections():
@@ -54,6 +65,8 @@ def init_admin_routes(app, user_model, session_model, alert_model):
         """Serve evidence files."""
         return send_from_directory(UPLOAD_FOLDER, filename)
     
+=======
+>>>>>>> uploaded
     @admin_bp.route('/api/stats')
     @admin_required
     def get_stats():

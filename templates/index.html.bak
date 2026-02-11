@@ -3,14 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<<<<<<< HEAD
-    <title>EdgeSafe AI - AI-Powered Hazardous Situation Detection System</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-=======
-    <title>XDVioDet - AI-Powered Violence Detection System</title>
+    <title>XDVioDet - Video Violence Detection</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,7 +17,6 @@
             opacity: 0.7;
             border-left: 3px solid;
             transition: opacity 0.3s ease;
-            cursor: pointer;
         }
         .violence-marker:hover {
             opacity: 1;
@@ -41,14 +33,7 @@
             background-color: rgba(234, 179, 8, 0.3);
             border-left-color: #eab308;
         }
-        #annotation-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: block;
-        }
     </style>
->>>>>>> uploaded
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
     <!-- Navigation Header -->
@@ -60,62 +45,16 @@
                         <i class="fas fa-shield-alt text-white text-lg"></i>
                     </div>
                     <span class="text-2xl font-bold bg-gradient-to-r from-red-400 to-orange-500 bg-clip-text text-transparent">
-<<<<<<< HEAD
-                        EdgeSafe AI
-=======
                         XDVioDet
->>>>>>> uploaded
                     </span>
                 </div>
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#home" class="hover:text-orange-400 transition">Home</a>
-                    <a href="/live-detection" class="hover:text-orange-400 transition">
-                        <i class="fas fa-camera mr-1"></i>Live Detection
-                    </a>
                     <a href="#detection" class="hover:text-orange-400 transition">Detection</a>
                     <a href="#about" class="hover:text-orange-400 transition">About</a>
-<<<<<<< HEAD
-                    <a href="{{ url_for('admin.dashboard') }}" class="hover:text-orange-400 transition">
-                        <i class="fas fa-user-shield mr-1"></i>Admin
-                    </a>
-                    {% if session.get('user_role') == 'admin' %}
-                    <a href="{{ url_for('admin.dashboard') }}"
-                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition flex items-center">
-                        <i class="fas fa-user-shield mr-2"></i> Admin Panel
-                    </a>
-                    {% endif %}
-                    <a href="#footer" class="hover:text-orange-400 transition">Contact</a>
+                    <a href="#contact" class="hover:text-orange-400 transition">Contact</a>
                 </div>
                 <div class="flex items-center space-x-4">
-                    {% if session.get('user_id') %}
-                        <!-- Authenticated User Menu -->
-                        <span class="text-sm text-slate-300">👤 {{ session.get('username') }}</span>
-=======
-                    <a href="#footer" class="hover:text-orange-400 transition">Contact</a>
-                </div>
-                <div class="flex items-center space-x-4">
-                    {% if user and user.is_authenticated %}
-                        <!-- Authenticated User Menu -->
-                        <span class="text-sm text-slate-300">👤 {{ user.username }}</span>
-                        {% if user.role == 'admin' %}
-                            <a href="/admin/dashboard" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition text-sm">
-                                <i class="fas fa-tachometer-alt mr-1"></i>Admin
-                            </a>
-                        {% endif %}
->>>>>>> uploaded
-                        <a href="{{ url_for('auth.logout') }}" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition text-sm">
-                            Logout
-                        </a>
-                    {% else %}
-                        <!-- Guest Menu -->
-                        <a href="{{ url_for('auth.login') }}" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition text-sm">
-                            Login
-                        </a>
-                        <a href="{{ url_for('auth.signup') }}" class="bg-orange-600 hover:bg-orange-700 px-4 py-2 rounded-lg transition text-sm">
-                            Sign Up
-                        </a>
-                    {% endif %}
-                    
                     <span class="text-sm text-slate-400">v2.0</span>
                     <div id="status-indicator" class="flex items-center space-x-2">
                         <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -130,17 +69,10 @@
     <section id="home" class="hero-gradient py-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-5xl md:text-6xl font-bold mb-4">
-<<<<<<< HEAD
-                AI-Powered Hazardous Situation Detection
-            </h1>
-            <p class="text-xl text-blue-100 mb-8">
-                Detect and analyze hazardous activities in videos with advanced deep learning
-=======
                 AI-Powered Violence Detection
             </h1>
             <p class="text-xl text-blue-100 mb-8">
                 Detect and analyze violent content in videos with advanced deep learning
->>>>>>> uploaded
             </p>
             <a href="#detection" class="inline-block px-8 py-3 bg-white text-purple-600 font-bold rounded-lg hover:shadow-lg transition transform hover:scale-105">
                 Get Started <i class="fas fa-arrow-right ml-2"></i>
@@ -150,139 +82,35 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <!-- Status Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-400 text-sm mb-1">Model Status</p>
-                        <p id="model-status" class="text-2xl font-bold text-green-400">Ready</p>
-                    </div>
-                    <i class="fas fa-cube text-2xl text-slate-600"></i>
-                </div>
-            </div>
-            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-400 text-sm mb-1">Videos Processed</p>
-                        <p id="videos-count" class="text-2xl font-bold text-blue-400">0</p>
-                    </div>
-                    <i class="fas fa-video text-2xl text-slate-600"></i>
-                </div>
-            </div>
-            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-400 text-sm mb-1">Processing Status</p>
-                        <p id="gpu-status" class="text-2xl font-bold text-purple-400">Ready</p>
-                    </div>
-                    <i class="fas fa-bolt text-2xl text-slate-600"></i>
-                </div>
-            </div>
-            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-slate-400 text-sm mb-1">Last Processing Time</p>
-                        <p id="response-time" class="text-2xl font-bold text-emerald-400">--</p>
-                    </div>
-                    <i class="fas fa-tachometer-alt text-2xl text-slate-600"></i>
-                </div>
-            </div>
-        </div>
-
         <!-- Detection Section -->
         <section id="detection" class="mb-16">
-            <!-- Video Player Section - PROMINENTLY DISPLAYED AT TOP -->
+            <!-- Live Video Player (Prominently Displayed) -->
             <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8 mb-8">
-                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <h2 class="text-3xl font-bold mb-6 flex items-center">
                     <i class="fas fa-play-circle mr-3 text-cyan-500"></i>
-                    Video Analysis with Real-Time Detection
+                    Live Video Detection
                 </h2>
+                
                 <div class="space-y-4">
                     <!-- Video Player Container -->
-                    <div class="relative w-full bg-black rounded-lg overflow-hidden" id="video-container" style="aspect-ratio: 16/9; min-height: 400px; max-height: 600px;">
-                        <video id="analysis-video" class="w-full h-full object-cover" controls playsinline>
+                    <div class="relative rounded-lg overflow-hidden bg-black aspect-video flex items-center justify-center" id="video-container">
+                        <video id="analysis-video" class="w-full h-full" controls>
                             <p>Your browser does not support HTML5 video.</p>
                         </video>
-                        <!-- Canvas for detection overlays - overlaid on video -->
-                        <canvas id="annotation-canvas" class="absolute top-0 left-0" style="display: none; z-index: 5; width: 100%; height: 100%;"></canvas>
-                        <!-- Violence Overlay Badge -->
+                        <!-- Violence Overlay -->
                         <div id="violence-overlay" class="absolute top-4 right-4 bg-slate-900/80 px-4 py-2 rounded-lg hidden z-10">
                             <p class="text-sm text-slate-300">Violence Score</p>
                             <p id="overlay-score" class="text-2xl font-bold text-red-400">--</p>
                         </div>
                     </div>
 
-                    <!-- Tabs for Video/Camera -->
-                    <div class="flex gap-2 mt-4 border-b border-slate-700">
-                        <button type="button" id="video-tab-btn" class="px-4 py-2 border-b-2 border-cyan-500 text-cyan-400 font-semibold focus:outline-none cursor-pointer">
-                            <i class="fas fa-video mr-2"></i>Uploaded Video
-                        </button>
-                        <button type="button" id="camera-tab-btn" class="px-4 py-2 border-b-2 border-transparent text-slate-400 font-semibold hover:text-slate-300 focus:outline-none cursor-pointer">
-                            <i class="fas fa-camera mr-2"></i>Live Camera
-                        </button>
-                    </div>
-
-                    <!-- Camera Stream Container -->
-                    <div id="camera-container" class="hidden mt-4">
-                        <div class="relative w-full bg-black rounded-lg overflow-hidden" style="aspect-ratio: 16/9; min-height: 400px; max-height: 600px;">
-                            <img id="camera-stream" src="" alt="Camera Stream" class="w-full h-full object-cover" style="display:none;">
-                            <div id="camera-placeholder" class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-700 to-slate-900">
-                                <i class="fas fa-camera text-6xl text-slate-600 mb-4"></i>
-                                <p class="text-slate-400 text-lg">Camera Feed (Start to view)</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Camera Controls -->
-                        <div class="mt-4 flex gap-3 flex-wrap">
-                            <button type="button" id="camera-start-btn" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg flex items-center gap-2 transition cursor-pointer">
-                                <i class="fas fa-play"></i>Start Camera
-                            </button>
-                            <button type="button" id="camera-stop-btn" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg flex items-center gap-2 transition disabled:opacity-50 cursor-pointer" disabled>
-                                <i class="fas fa-stop"></i>Stop Camera
-                            </button>
-                        </div>
-
-                        <!-- Camera Analysis Display -->
-                        <div class="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div class="bg-slate-700/30 rounded-lg p-4">
-                                <p class="text-xs text-slate-400 mb-1">Danger Level</p>
-                                <p id="camera-danger-level" class="text-2xl font-bold text-orange-400">0%</p>
-                            </div>
-                            <div class="bg-slate-700/30 rounded-lg p-4">
-                                <p class="text-xs text-slate-400 mb-1">Violence Score</p>
-                                <p id="camera-violence-score" class="text-2xl font-bold text-red-400">0%</p>
-                            </div>
-                            <div class="bg-slate-700/30 rounded-lg p-4">
-                                <p class="text-xs text-slate-400 mb-1">Hazard Score</p>
-                                <p id="camera-hazard-score" class="text-2xl font-bold text-yellow-400">0%</p>
-                            </div>
-                            <div class="bg-slate-700/30 rounded-lg p-4">
-                                <p class="text-xs text-slate-400 mb-1">Active Alerts</p>
-                                <p id="camera-alerts-count" class="text-2xl font-bold text-cyan-400">0</p>
-                            </div>
-                        </div>
-
-                        <!-- Live Alerts Feed -->
-                        <div id="camera-alerts" class="mt-6 bg-slate-700/20 rounded-lg p-4 max-h-48 overflow-y-auto">
-                            <p class="text-sm font-semibold text-slate-300 mb-3">Live Alerts</p>
-                            <div id="camera-alerts-list" class="space-y-2 text-sm">
-                                <p class="text-slate-500 text-center py-4">Waiting for alerts...</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Timeline with Violence Markers -->
                     <div class="bg-slate-700/30 rounded-lg p-4">
-<<<<<<< HEAD
-                        <p class="text-slate-400 text-sm mb-3">Hazardous Situation Timeline</p>
-=======
                         <p class="text-slate-400 text-sm mb-3">Violence Detection Timeline</p>
->>>>>>> uploaded
                         <div id="violence-timeline" class="w-full h-12 bg-slate-700 rounded-lg relative overflow-hidden cursor-pointer group">
-                            <div class="absolute inset-0 flex items-center text-xs text-slate-500 pointer-events-none">
-                                <span class="ml-2">Start</span>
-                                <span class="ml-auto mr-2">End</span>
+                            <div class="absolute inset-0 flex items-center">
+                                <span class="absolute left-0 text-xs text-slate-400 ml-2">Start</span>
+                                <span class="absolute right-0 text-xs text-slate-400 mr-2">End</span>
                             </div>
                         </div>
                     </div>
@@ -309,9 +137,9 @@
                 </div>
             </div>
 
-            <!-- Upload and Results Section - BELOW VIDEO -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Upload Panel -->
+            <!-- Upload Panel (Below Video Player) -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Upload Section -->
                 <div class="lg:col-span-2 bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8">
                     <h2 class="text-2xl font-bold mb-6 flex items-center">
                         <i class="fas fa-cloud-upload-alt mr-3 text-orange-500"></i>
@@ -327,7 +155,7 @@
                                        class="hidden" />
                                 <label for="video-file" 
                                        class="block w-full px-4 py-8 border-2 border-dashed border-slate-600 rounded-lg text-center cursor-pointer hover:border-slate-500 hover:bg-slate-700/50 transition bg-slate-700/30">
-                                    <i class="fas fa-film text-4xl text-slate-500 mb-3 block"></i>
+                                    <i class="fas fa-film text-4xl text-slate-500 mb-3"></i>
                                     <p class="text-white font-medium">Click to upload or drag and drop</p>
                                     <p class="text-slate-400 text-sm">MP4, AVI, MOV, MKV, FLV, WMV, WebM (Max 500MB)</p>
                                 </label>
@@ -388,7 +216,7 @@
                         <div class="bg-slate-700/30 rounded-lg p-4">
                             <p class="text-slate-400 text-sm mb-2">Video Info</p>
                             <div class="space-y-1 text-sm">
-                                <p><span class="text-slate-400">Total Frames:</span> <span id="total-frames" class="font-semibold">--</span></p>
+                                <p><span class="text-slate-400">Frames:</span> <span id="total-frames" class="font-semibold">--</span></p>
                                 <p><span class="text-slate-400">Extracted:</span> <span id="extracted-frames" class="font-semibold">--</span></p>
                                 <p><span class="text-slate-400">Processing:</span> <span id="processing-time" class="font-semibold">--</span></p>
                             </div>
@@ -404,29 +232,29 @@
             </div>
 
             <!-- Detected Labels Section -->
-            <div id="labels-section" class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8 mb-8 hidden">
+            <div id="labels-section" class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8 mt-8 hidden">
                 <h2 class="text-2xl font-bold mb-6 flex items-center">
                     <i class="fas fa-tags mr-3 text-purple-500"></i>
                     Detected Violence Indicators
                 </h2>
                 <div id="labels-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                    <!-- Dynamically populated -->
+                    <!-- Dynamically populated with labels -->
                 </div>
             </div>
 
-            <!-- Frames Preview Section -->
-            <div id="preview-section" class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8 mb-8 hidden">
+            <!-- Extracted Frames Section -->
+            <div id="preview-section" class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8 mt-8 hidden">
                 <h2 class="text-2xl font-bold mb-6 flex items-center">
                     <i class="fas fa-image mr-3 text-cyan-500"></i>
                     Extracted Frames Preview
                 </h2>
                 <div id="frames-gallery" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <!-- Dynamically populated -->
+                    <!-- Dynamically populated with frame thumbnails -->
                 </div>
             </div>
 
             <!-- Analysis History -->
-            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8">
+            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8 mt-8">
                 <h2 class="text-2xl font-bold mb-6 flex items-center">
                     <i class="fas fa-history mr-3 text-indigo-500"></i>
                     Analysis History
@@ -445,7 +273,7 @@
                         <tbody id="history-table" class="divide-y divide-slate-700">
                             <tr>
                                 <td colspan="5" class="py-8 px-4 text-center text-slate-400">
-                                    <i class="fas fa-database text-2xl mb-2 block"></i>
+                                    <i class="fas fa-database text-2xl mb-2"></i>
                                     <p>No analysis history yet</p>
                                 </td>
                             </tr>
@@ -456,21 +284,10 @@
         </section>
 
         <!-- About Section -->
-        <section id="about" class="mb-16 mt-16">
+        <section id="about" class="mb-16">
             <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8">
                 <h2 class="text-3xl font-bold mb-6 flex items-center">
                     <i class="fas fa-info-circle mr-3 text-blue-500"></i>
-<<<<<<< HEAD
-                    About EdgeSafe AI
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <h3 class="text-xl font-bold mb-4 text-orange-400">What is EdgeSafe AI?</h3>
-                        <p class="text-slate-300 mb-4">
-                            EdgeSafe AI is an advanced AI-powered video hazardous situation detection system built on deep learning and
-                            spatial-temporal analysis. It analyzes video content frame-by-frame to identify and classify hazardous activities with
-                            high accuracy.
-=======
                     About XDVioDet
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -478,7 +295,6 @@
                         <h3 class="text-xl font-bold mb-4 text-orange-400">What is XDVioDet?</h3>
                         <p class="text-slate-300 mb-4">
                             XDVioDet is an advanced AI-powered video violence detection system built on deep learning and graph neural networks. It analyzes video content frame-by-frame to identify and classify violent activities with high accuracy.
->>>>>>> uploaded
                         </p>
                         <h3 class="text-xl font-bold mb-4 text-orange-400">Technology Stack</h3>
                         <ul class="text-slate-300 space-y-2">
@@ -489,22 +305,14 @@
                         </ul>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold mb-4 text-orange-400">Key Features</h3>
+                        <h3 class="text-xl font-bold mb-4 text-orange-400">Features</h3>
                         <ul class="text-slate-300 space-y-2">
-<<<<<<< HEAD
-                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Real-time Hazardous Detection</li>
-                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Frame-by-Frame Analysis</li>
-                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Interactive Video Player</li>
-                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Confidence Scoring</li>
-                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Hazard Detection Timeline</li>
-=======
                             <li><i class="fas fa-star text-yellow-400 mr-2"></i>Real-time Violence Detection</li>
                             <li><i class="fas fa-star text-yellow-400 mr-2"></i>Frame-by-Frame Analysis</li>
                             <li><i class="fas fa-star text-yellow-400 mr-2"></i>Interactive Video Player</li>
                             <li><i class="fas fa-star text-yellow-400 mr-2"></i>Confidence Scoring</li>
-                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Violence Detection Timeline</li>
->>>>>>> uploaded
-                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>YOLO-Style Detection Boxes</li>
+                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Comprehensive Detection Timeline</li>
+                            <li><i class="fas fa-star text-yellow-400 mr-2"></i>Cross-Platform Compatible</li>
                         </ul>
                     </div>
                 </div>
@@ -517,31 +325,22 @@
                         <span class="px-3 py-2 bg-orange-600/20 text-orange-400 rounded-full text-sm">Weapons</span>
                         <span class="px-3 py-2 bg-yellow-600/20 text-yellow-400 rounded-full text-sm">Threatening Gestures</span>
                         <span class="px-3 py-2 bg-yellow-600/20 text-yellow-400 rounded-full text-sm">Blood</span>
-                        <span class="px-3 py-2 bg-blue-600/20 text-blue-400 rounded-full text-sm">Explosions</span>
-                        <span class="px-3 py-2 bg-purple-600/20 text-purple-400 rounded-full text-sm">Hazardous Scenarios</span>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Footer Section -->
-    <footer id="footer" class="border-t border-slate-700 mt-16 py-12 bg-slate-900/50">
+    <!-- Contact/Footer Section -->
+    <footer id="contact" class="border-t border-slate-700 mt-16 py-12 bg-slate-900/50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                 <div>
                     <h3 class="text-lg font-bold mb-4 flex items-center">
                         <i class="fas fa-shield-alt mr-2 text-orange-500"></i>
-<<<<<<< HEAD
-                        EdgeSafe AI
-                    </h3>
-                    <p class="text-slate-400 text-sm">Advanced AI-powered hazardous situation detection system for video analysis and
-                        safety.</p>
-=======
                         XDVioDet
                     </h3>
-                    <p class="text-slate-400 text-sm">Advanced AI-powered violence detection system for video analysis and safety.</p>
->>>>>>> uploaded
+                    <p class="text-slate-400 text-sm">Advanced AI-powered violence detection system for video analysis.</p>
                 </div>
                 <div>
                     <h4 class="text-sm font-bold mb-4 text-orange-400">Quick Links</h4>
@@ -549,7 +348,7 @@
                         <li><a href="#home" class="hover:text-orange-400 transition">Home</a></li>
                         <li><a href="#detection" class="hover:text-orange-400 transition">Detection</a></li>
                         <li><a href="#about" class="hover:text-orange-400 transition">About</a></li>
-                        <li><a href="#footer" class="hover:text-orange-400 transition">Contact</a></li>
+                        <li><a href="#contact" class="hover:text-orange-400 transition">Contact</a></li>
                     </ul>
                 </div>
                 <div>
@@ -558,7 +357,7 @@
                         <li><a href="#" class="hover:text-orange-400 transition">Documentation</a></li>
                         <li><a href="#" class="hover:text-orange-400 transition">API Reference</a></li>
                         <li><a href="#" class="hover:text-orange-400 transition">GitHub</a></li>
-                        <li><a href="#" class="hover:text-orange-400 transition">Research Paper</a></li>
+                        <li><a href="#" class="hover:text-orange-400 transition">Paper</a></li>
                     </ul>
                 </div>
                 <div>
@@ -573,12 +372,7 @@
             </div>
             <div class="border-t border-slate-700 pt-8">
                 <div class="flex flex-col md:flex-row justify-between items-center">
-<<<<<<< HEAD
-                    <p class="text-slate-400 text-sm">© 2026 EdgeSafe AI. All rights reserved. Built with <i
-                            class="fas fa-heart text-red-500"></i> for safety.</p>
-=======
                     <p class="text-slate-400 text-sm">© 2025 XDVioDet. All rights reserved. Built with <i class="fas fa-heart text-red-500"></i> for safety.</p>
->>>>>>> uploaded
                     <div class="flex space-x-6 mt-4 md:mt-0 text-sm text-slate-400">
                         <a href="#" class="hover:text-orange-400 transition">Privacy Policy</a>
                         <a href="#" class="hover:text-orange-400 transition">Terms of Service</a>
@@ -596,13 +390,274 @@
                 <div class="animate-spin inline-flex items-center justify-center w-12 h-12 border-4 border-slate-600 border-t-orange-500 rounded-full"></div>
             </div>
             <p class="mt-4 text-white font-medium">Analyzing video...</p>
-            <p id="loading-message" class="text-slate-400 text-sm mt-1">Extracting frames and features...</p>
+            <p id="loading-message" class="text-slate-400 text-sm mt-1"></p>
         </div>
     </div>
 
-    <!-- Toast Notifications -->
-    <div id="toast-container" class="fixed bottom-4 right-4 space-y-2 z-40"></div>
+    <script src="{{ url_for('static', filename='js/video.js') }}"></script>
+</body>
+</html>
 
-    <script src="{{ url_for('static', filename='js/detection.js') }}"></script>
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Header -->
+        <div class="mb-12">
+            <h1 class="text-4xl font-bold mb-2">Video Violence Detection</h1>
+            <p class="text-slate-400">Upload video files to detect violence, weapons, and dangerous scenarios</p>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm mb-1">Model Status</p>
+                        <p id="model-status" class="text-2xl font-bold text-green-400">Ready</p>
+                    </div>
+                    <i class="fas fa-cube text-2xl text-slate-600"></i>
+                </div>
+            </div>
+            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm mb-1">Videos Processed</p>
+                        <p id="videos-count" class="text-2xl font-bold text-blue-400">0</p>
+                    </div>
+                    <i class="fas fa-video text-2xl text-slate-600"></i>
+                </div>
+            </div>
+            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm mb-1">GPU Available</p>
+                        <p id="gpu-status" class="text-2xl font-bold text-purple-400">Detecting...</p>
+                    </div>
+                    <i class="fas fa-bolt text-2xl text-slate-600"></i>
+                </div>
+            </div>
+            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-6 hover:border-slate-600 transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-slate-400 text-sm mb-1">Processing Time</p>
+                        <p id="response-time" class="text-2xl font-bold text-emerald-400">--</p>
+                    </div>
+                    <i class="fas fa-tachometer-alt text-2xl text-slate-600"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Panel -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+            <!-- Upload Panel -->
+            <div class="lg:col-span-2 bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-cloud-upload-alt mr-3 text-orange-500"></i>
+                    Upload Video
+                </h2>
+                
+                <div class="space-y-6">
+                    <!-- File Input -->
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Select Video File</label>
+                        <div class="relative">
+                            <input type="file" id="video-file" accept=".mp4,.avi,.mov,.mkv,.flv,.wmv,.webm" 
+                                   class="hidden" />
+                            <label for="video-file" 
+                                   class="block w-full px-4 py-8 border-2 border-dashed border-slate-600 rounded-lg text-center cursor-pointer hover:border-slate-500 hover:bg-slate-700/50 transition bg-slate-700/30">
+                                <i class="fas fa-film text-4xl text-slate-500 mb-3"></i>
+                                <p class="text-white font-medium">Click to upload or drag and drop</p>
+                                <p class="text-slate-400 text-sm">MP4, AVI, MOV, MKV, FLV, WMV, WebM (Max 500MB)</p>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- File Info -->
+                    <div id="file-info" class="hidden">
+                        <div class="bg-slate-700/30 rounded-lg p-4">
+                            <p class="text-slate-400 text-sm mb-2">Selected File</p>
+                            <p id="file-name" class="font-semibold text-white truncate"></p>
+                            <p id="file-size" class="text-slate-400 text-sm mt-1"></p>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3 pt-4">
+                        <button id="upload-btn" 
+                                class="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-lg font-medium transition transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                            <i class="fas fa-arrow-up mr-2"></i>
+                            Upload & Analyze
+                        </button>
+                        <button id="clear-btn" 
+                                class="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg font-medium transition">
+                            <i class="fas fa-eraser mr-2"></i>
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8">
+                <h2 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fas fa-chart-line mr-3 text-blue-500"></i>
+                    Detection Results
+                </h2>
+
+                <div id="results-container" class="space-y-4 hidden">
+                    <!-- Violence Score -->
+                    <div class="bg-slate-700/30 rounded-lg p-4">
+                        <p class="text-slate-400 text-sm mb-2">Violence Confidence</p>
+                        <div class="text-3xl font-bold" id="violence-score">--</div>
+                        <div class="w-full bg-slate-700 rounded-full h-2 mt-2">
+                            <div id="confidence-bar" class="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Detection Result -->
+                    <div class="bg-slate-700/30 rounded-lg p-4">
+                        <p class="text-slate-400 text-sm mb-2">Classification</p>
+                        <div id="detection-result" class="flex items-center gap-2">
+                            <div id="result-badge" class="px-3 py-1 rounded-full text-sm font-semibold">--</div>
+                        </div>
+                    </div>
+
+                    <!-- Processing Info -->
+                    <div class="bg-slate-700/30 rounded-lg p-4">
+                        <p class="text-slate-400 text-sm mb-2">Video Info</p>
+                        <div class="space-y-1 text-sm">
+                            <p><span class="text-slate-400">Frames:</span> <span id="total-frames" class="font-semibold">--</span></p>
+                            <p><span class="text-slate-400">Extracted:</span> <span id="extracted-frames" class="font-semibold">--</span></p>
+                            <p><span class="text-slate-400">Processing:</span> <span id="processing-time" class="font-semibold">--</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="no-results" class="text-center py-8">
+                    <i class="fas fa-inbox text-4xl text-slate-600 mb-2"></i>
+                    <p class="text-slate-400">No results yet</p>
+                    <p class="text-slate-500 text-sm">Upload a video to analyze</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Player with Annotations -->
+        <div id="player-section" class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8 mb-12 hidden">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-play-circle mr-3 text-cyan-500"></i>
+                Video Playback with Detection
+            </h2>
+            <div class="space-y-4">
+                <!-- Video Canvas with Annotations -->
+                <div class="relative rounded-lg overflow-hidden bg-black">
+                    <video id="analysis-video" class="w-full max-h-96 mx-auto" controls>
+                        <p>Your browser does not support HTML5 video. Please use a modern browser.</p>
+                    </video>
+                    <!-- Overlay Canvas for Annotations -->
+                    <canvas id="annotation-canvas" class="absolute inset-0 hidden"></canvas>
+                </div>
+
+                <!-- Timeline with Violence Markers -->
+                <div class="bg-slate-700/30 rounded-lg p-4">
+                    <p class="text-slate-400 text-sm mb-3">Violence Detection Timeline</p>
+                    <div id="violence-timeline" class="w-full h-8 bg-slate-700 rounded-lg relative overflow-hidden">
+                        <!-- Dynamically populated with violence segments -->
+                    </div>
+                    <div class="flex justify-between mt-2 text-xs text-slate-400">
+                        <span>Start</span>
+                        <span>End</span>
+                    </div>
+                </div>
+
+                <!-- Frame-by-frame Analysis -->
+                <div class="bg-slate-700/30 rounded-lg p-4">
+                    <p class="text-slate-400 text-sm mb-3">Frame Analysis</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <p class="text-xs text-slate-400 mb-1">Current Frame</p>
+                            <p id="current-frame" class="text-lg font-bold text-white">--</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 mb-1">Current Time</p>
+                            <p id="current-time" class="text-lg font-bold text-white">--:--</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400 mb-1">Violence Score</p>
+                            <p id="frame-confidence" class="text-lg font-bold text-orange-400">--</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detected Labels Section -->
+        <div id="labels-section" class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8 mb-12 hidden">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-tags mr-3 text-purple-500"></i>
+                Detected Violence Indicators
+            </h2>
+            <div id="labels-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <!-- Dynamically populated with labels -->
+            </div>
+        </div>
+
+        <!-- Video Preview Section -->
+        <div id="preview-section" class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8 mb-12 hidden">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-image mr-3 text-cyan-500"></i>
+                Extracted Frames Preview
+            </h2>
+            <div id="frames-gallery" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <!-- Dynamically populated with frame thumbnails -->
+            </div>
+        </div>
+
+        <!-- Recent Analyses Table -->
+        <div class="bg-slate-800/50 backdrop-blur border border-slate-700 rounded-lg p-8">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-history mr-3 text-indigo-500"></i>
+                Analysis History
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-slate-600">
+                            <th class="text-left py-3 px-4 text-slate-400 font-medium">#</th>
+                            <th class="text-left py-3 px-4 text-slate-400 font-medium">Video</th>
+                            <th class="text-left py-3 px-4 text-slate-400 font-medium">Confidence</th>
+                            <th class="text-left py-3 px-4 text-slate-400 font-medium">Result</th>
+                            <th class="text-left py-3 px-4 text-slate-400 font-medium">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table" class="divide-y divide-slate-700">
+                        <tr>
+                            <td colspan="5" class="py-8 px-4 text-center text-slate-400">
+                                <i class="fas fa-database text-2xl mb-2"></i>
+                                <p>No analysis history yet</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Spinner Modal -->
+    <div id="loading-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="bg-slate-800 rounded-lg p-8 text-center">
+            <div class="inline-block">
+                <div class="animate-spin inline-flex items-center justify-center w-12 h-12 border-4 border-slate-600 border-t-orange-500 rounded-full"></div>
+            </div>
+            <p class="mt-4 text-white font-medium">Analyzing video...</p>
+            <p id="loading-message" class="text-slate-400 text-sm mt-1"></p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-700 mt-16 py-8 text-center text-slate-400">
+       
+        <p class="text-xs mt-2">ECCV 2020 | <a href="#" class="hover:text-white transition">GitHub</a> | <a href="#" class="hover:text-white transition">Paper</a></p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/video.js') }}"></script>
 </body>
 </html>

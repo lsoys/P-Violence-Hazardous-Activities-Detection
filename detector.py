@@ -369,7 +369,10 @@ class ViolenceDetector:
                 'violence_score': violence_score,
                 'hazard_score': hazard_score,
                 'overall_danger': overall_danger,
+<<<<<<< HEAD
                 'danger_level': overall_danger, # Alias for frontend compatibility
+=======
+>>>>>>> uploaded
                 'people_count': people_count,
                 'motion_score': motion_score,
                 'alerts': alerts,
@@ -382,7 +385,10 @@ class ViolenceDetector:
                 'violence_score': 0.0,
                 'hazard_score': 0.0,
                 'overall_danger': 0.0,
+<<<<<<< HEAD
                 'danger_level': 0.0,
+=======
+>>>>>>> uploaded
                 'people_count': 0,
                 'motion_score': 0.0,
                 'alerts': [],
@@ -436,7 +442,10 @@ class ViolenceDetector:
                 'violence_score': 0.0,
                 'hazard_score': 0.0,
                 'overall_danger': 0.0,
+<<<<<<< HEAD
                 'danger_level': 0.0,
+=======
+>>>>>>> uploaded
                 'people_count': 0,
                 'motion_score': 0.0,
                 'alerts': [],
@@ -500,10 +509,15 @@ class ViolenceDetector:
         
         cap.release()
         
+<<<<<<< HEAD
+=======
+        # Determine if violence/hazard was detected
+>>>>>>> uploaded
         results['violence_detected'] = results['max_violence_score'] > 0.5
         results['hazard_detected'] = results['max_hazard_score'] > 0.5
         
         return results
+<<<<<<< HEAD
 
     def draw_detections(self, frame, analysis):
         """Draw detections and alerts on frame"""
@@ -545,6 +559,59 @@ class ViolenceDetector:
             cv2.putText(frame, text, (10, y_offset), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
             y_offset += 30
+=======
+    
+    def draw_detections(self, frame, analysis):
+        """Draw detection boxes and alerts on frame"""
+        annotated = frame.copy()
+        
+        # Draw detection boxes
+        for det in analysis.get('detections', []):
+            bbox = det.get('bbox')
+            if not bbox:
+                continue
+            
+            label = det.get('label', 'unknown')
+            conf = det.get('confidence', 0)
+            
+            # Color based on danger level
+            if label in ['fire', 'smoke']:
+                color = (0, 0, 255)  # Red for fire
+            elif det.get('danger_info', {}).get('category') == 'weapon':
+                color = (0, 0, 255)  # Red for weapons
+            elif label == 'person':
+                color = (0, 255, 0)  # Green for people
+            else:
+                color = (255, 255, 0)  # Cyan for others
+            
+            cv2.rectangle(annotated, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
+            cv2.putText(annotated, f"{label} {conf:.0%}", 
+                       (bbox[0], bbox[1] - 10),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        
+        # Draw alerts
+        y_offset = 30
+        for alert in analysis.get('alerts', []):
+            severity = alert.get('severity', 'low')
+            color = (0, 0, 255) if severity == 'critical' else (0, 165, 255) if severity == 'high' else (0, 255, 255)
+            
+            cv2.putText(annotated, f"⚠ {alert['message']}", 
+                       (10, y_offset),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+            y_offset += 25
+        
+        # Draw overall status
+        danger = analysis.get('overall_danger', 0)
+        status_color = (0, 0, 255) if danger > 0.7 else (0, 165, 255) if danger > 0.4 else (0, 255, 0)
+        status_text = f"Danger Level: {danger:.0%}"
+        
+        cv2.rectangle(annotated, (frame.shape[1] - 200, 10), (frame.shape[1] - 10, 40), status_color, -1)
+        cv2.putText(annotated, status_text, 
+                   (frame.shape[1] - 190, 30),
+                   cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        
+        return annotated
+>>>>>>> uploaded
 
 
 # Global detector instance

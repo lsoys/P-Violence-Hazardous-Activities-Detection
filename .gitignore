@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 venv/
+=======
+>>>>>>> uploaded
 __pycache__/
 *.pyo
 .DS_Store
